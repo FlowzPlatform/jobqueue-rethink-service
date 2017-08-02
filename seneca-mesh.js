@@ -1,4 +1,11 @@
 let senecaObj = require('seneca')
+senecaObj()
+	.use('mesh',{timeout: 999999})
+	.act({role: 'job', cmd: 'create'}, {to:'abc@vmail.com',from:'pqr1@vmail.com'}, (err, done) => {
+	if (err) { throw err; }
+	console.log('test-mesh done.', done)
+})
+
 //let SenecaClient = senecaObj.client()
 
 // SenecaClient.act({role: 'email', cmd: 'send'}, function (args, result) {
@@ -9,12 +16,7 @@ let senecaObj = require('seneca')
 
 //senecaObj.use('mesh').act('role:job,cmd:create',{to:'abc@vmail.com',from:'pqr1@vmail.com'}, console.log)
 
-senecaObj()
-	.use('mesh',{timeout: 999999})
-	.act({role: 'job', cmd: 'create'}, {to:'abc@vmail.com',from:'pqr1@vmail.com'}, (err, done) => {
-	if (err) { throw err; }
-	console.log('test-mesh done.', done)
-})
+
 
 // // Queue options have defaults and are not required
 // const queueOption1 = {
