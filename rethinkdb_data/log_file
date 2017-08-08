@@ -1,0 +1,111 @@
+2017-08-03T12:35:01.788109467 0.086777s notice: Recursively removing directory /var/www/html/node/seneca-email/rethinkdb_data/tmp
+2017-08-03T12:35:01.799210291 0.097877s notice: Initializing directory /var/www/html/node/seneca-email/rethinkdb_data
+2017-08-03T12:35:01.799437798 0.098104s notice: Running rethinkdb 2.3.5~0xenial (GCC 5.3.1)...
+2017-08-03T12:35:01.808765681 0.107437s notice: Running on Linux 4.4.0-72-generic x86_64
+2017-08-03T12:35:01.808895261 0.107561s notice: Loading data from directory /var/www/html/node/seneca-email/rethinkdb_data
+2017-08-03T12:35:01.837891208 0.136557s info: Automatically using cache size of 2348 MB
+2017-08-03T12:35:01.838211431 0.136877s notice: Listening for intracluster connections on port 29015
+2017-08-03T12:35:01.838324167 0.136989s info: Attempting connection to 1 peer...
+2017-08-03T12:35:01.884700761 0.183367s notice: Connected to server "OBLAP_71_7uq" d2b2206a-27ec-4d99-862a-4a9d51cd1742
+2017-08-03T12:35:01.886240624 0.184906s notice: Listening for client driver connections on port 28015
+2017-08-03T12:35:01.886444587 0.185110s notice: Listening for administrative HTTP connections on port 9292
+2017-08-03T12:35:01.886450529 0.185116s notice: Listening on cluster addresses: 127.0.0.1, 127.0.1.1
+2017-08-03T12:35:01.886453277 0.185118s notice: Listening on driver addresses: 127.0.0.1, 127.0.1.1
+2017-08-03T12:35:01.886457692 0.185123s notice: Listening on http addresses: 127.0.0.1, 127.0.1.1
+2017-08-03T12:35:01.886460176 0.185125s notice: To fully expose RethinkDB on the network, bind to all addresses by running rethinkdb with the `--bind all` command line option.
+2017-08-03T12:35:01.886464440 0.185130s notice: Server ready, "oblap28_1ey" 98c1cc52-3b56-4b51-bbc9-ca263431787c
+2017-08-03T12:35:07.667248087 5.965914s notice: A newer version of the RethinkDB server is available: 2.3.6. You can read the changelog at <https://github.com/rethinkdb/rethinkdb/releases>.
+2017-08-03T12:37:56.539895990 174.838563s notice: Server got SIGINT from pid 0, uid 0; shutting down...
+2017-08-03T12:37:56.540160167 174.838826s notice: Shutting down client connections...
+2017-08-03T12:37:56.540390419 174.839056s notice: All client connections closed.
+2017-08-03T12:37:56.540398149 174.839064s notice: Shutting down storage engine... (This may take a while if you had a lot of unflushed data in the writeback cache.)
+2017-08-03T12:37:56.541174092 174.839840s notice: Storage engine shut down.
+2017-08-03T12:37:56.543173461 174.841840s notice: Disconnected from server "OBLAP_71_7uq" d2b2206a-27ec-4d99-862a-4a9d51cd1742
+2017-08-03T12:39:37.675717999 0.116796s notice: Running rethinkdb 2.3.5~0xenial (GCC 5.3.1)...
+2017-08-03T12:39:37.684440773 0.125525s notice: Running on Linux 4.4.0-72-generic x86_64
+2017-08-03T12:39:37.684615071 0.125691s notice: Loading data from directory /var/www/html/node/seneca-email/rethinkdb_data
+2017-08-03T12:39:37.708892223 0.149968s info: Automatically using cache size of 2321 MB
+2017-08-03T12:39:37.709474503 0.150550s notice: Listening for intracluster connections on port 29015
+2017-08-03T12:39:37.710870927 0.151946s notice: Listening for client driver connections on port 28015
+2017-08-03T12:39:37.711054166 0.152129s notice: Listening for administrative HTTP connections on port 9292
+2017-08-03T12:39:37.711059197 0.152134s notice: Listening on cluster addresses: 127.0.0.1, 127.0.1.1
+2017-08-03T12:39:37.711062778 0.152138s notice: Listening on driver addresses: 127.0.0.1, 127.0.1.1
+2017-08-03T12:39:37.711068284 0.152143s notice: Listening on http addresses: 127.0.0.1, 127.0.1.1
+2017-08-03T12:39:37.711071496 0.152147s notice: To fully expose RethinkDB on the network, bind to all addresses by running rethinkdb with the `--bind all` command line option.
+2017-08-03T12:39:37.711078673 0.152154s notice: Server ready, "oblap28_1ey" 98c1cc52-3b56-4b51-bbc9-ca263431787c
+2017-08-03T12:39:39.130628956 1.571704s notice: A newer version of the RethinkDB server is available: 2.3.6. You can read the changelog at <https://github.com/rethinkdb/rethinkdb/releases>.
+2017-08-03T12:39:50.900533441 13.341609s notice: Server got SIGINT from pid 0, uid 0; shutting down...
+2017-08-03T12:39:50.900618333 13.341694s notice: Shutting down client connections...
+2017-08-03T12:39:50.900738491 13.341814s notice: All client connections closed.
+2017-08-03T12:39:50.900746961 13.341822s notice: Shutting down storage engine... (This may take a while if you had a lot of unflushed data in the writeback cache.)
+2017-08-03T12:39:50.900991375 13.342067s notice: Storage engine shut down.
+2017-08-03T12:40:00.442544782 0.039519s notice: Running rethinkdb 2.3.5~0xenial (GCC 5.3.1)...
+2017-08-03T12:40:00.446827630 0.043805s notice: Running on Linux 4.4.0-72-generic x86_64
+2017-08-03T12:40:00.446911572 0.043886s notice: Loading data from directory /var/www/html/node/seneca-email/rethinkdb_data
+2017-08-03T12:40:00.480929149 0.077904s info: Automatically using cache size of 2348 MB
+2017-08-03T12:40:00.490776886 0.087752s notice: Listening for intracluster connections on port 29015
+2017-08-03T12:40:00.493592257 0.090567s notice: Listening for client driver connections on port 28015
+2017-08-03T12:40:00.494526445 0.091501s notice: Listening for administrative HTTP connections on port 9292
+2017-08-03T12:40:00.501917973 0.098893s notice: Listening on cluster addresses: 127.0.0.1, 172.17.0.1, 127.0.1.1, 172.16.105.197, fe80::23dc:d946:b8e1:ddb5%3
+2017-08-03T12:40:00.509661783 0.106637s notice: Listening on driver addresses: 127.0.0.1, 172.17.0.1, 127.0.1.1, 172.16.105.197, fe80::23dc:d946:b8e1:ddb5%3
+2017-08-03T12:40:00.550993888 0.147969s notice: Listening on http addresses: 127.0.0.1, 172.17.0.1, 127.0.1.1, 172.16.105.197, fe80::23dc:d946:b8e1:ddb5%3
+2017-08-03T12:40:00.551024023 0.147998s notice: Server ready, "oblap28_1ey" 98c1cc52-3b56-4b51-bbc9-ca263431787c
+2017-08-03T12:40:01.874755630 1.471731s notice: A newer version of the RethinkDB server is available: 2.3.6. You can read the changelog at <https://github.com/rethinkdb/rethinkdb/releases>.
+2017-08-03T12:41:44.423999612 104.020975s notice: Connected to proxy proxy-94d70467-0e45-46d2-8095-a7d66e67734f
+2017-08-03T12:41:46.471483580 106.068459s notice: Connected to server "OBLAP_71_7uq" d2b2206a-27ec-4d99-862a-4a9d51cd1742
+2017-08-03T12:43:08.432983989 188.029959s notice: Disconnected from proxy proxy-94d70467-0e45-46d2-8095-a7d66e67734f
+2017-08-03T12:47:58.486219254 478.083193s error: Heartbeat timeout, killing connection to peer [::ffff:172.16.230.247]:43534
+2017-08-03T12:47:58.488770786 478.085745s notice: Disconnected from server "OBLAP_71_7uq" d2b2206a-27ec-4d99-862a-4a9d51cd1742
+2017-08-03T12:50:42.542707351 642.139683s notice: Connected to proxy proxy-9af9204a-598a-44a7-94a4-4bd27ab26436
+2017-08-03T12:50:46.847739892 646.444715s notice: Connected to server "OBLAP29_kpn" 739e9cfe-ee4f-4320-837b-cff91d46c784
+2017-08-03T12:51:00.165650363 659.762625s notice: Disconnected from proxy proxy-9af9204a-598a-44a7-94a4-4bd27ab26436
+2017-08-03T12:51:54.884623812 714.481599s info: Rejected a connection from server d2b2206a-27ec-4d99-862a-4a9d51cd1742 since one is open already.
+2017-08-03T12:52:27.656615276 747.253590s notice: Connected to proxy proxy-e9ccf9ff-3920-4fe5-9ef6-957597ec74dc
+2017-08-03T12:52:29.763488757 749.360463s notice: Connected to server "OBLAP_71_7uq" d2b2206a-27ec-4d99-862a-4a9d51cd1742
+2017-08-03T12:59:51.159378238 1190.756354s notice: Disconnected from proxy proxy-e9ccf9ff-3920-4fe5-9ef6-957597ec74dc
+2017-08-03T13:04:46.050795094 1485.647769s notice: Disconnected from server "OBLAP_71_7uq" d2b2206a-27ec-4d99-862a-4a9d51cd1742
+2017-08-03T13:04:50.102299659 1489.699274s notice: Connected to server "OBLAP_71_7uq" d2b2206a-27ec-4d99-862a-4a9d51cd1742
+2017-08-03T13:04:52.031651782 1491.628627s info: Rejected a connection from server d2b2206a-27ec-4d99-862a-4a9d51cd1742 since one is open already.
+2017-08-03T13:04:52.040121128 1491.637097s info: Rejected a connection from server d2b2206a-27ec-4d99-862a-4a9d51cd1742 since one is open already.
+2017-08-03T13:05:17.665055299 1517.262031s notice: Disconnected from server "OBLAP_71_7uq" d2b2206a-27ec-4d99-862a-4a9d51cd1742
+2017-08-03T14:14:58.738484241 4418.214619s error: Heartbeat timeout, killing connection to peer [::ffff:172.16.160.229]:50202
+2017-08-03T14:14:58.751512841 4418.227647s notice: Disconnected from server "OBLAP29_kpn" 739e9cfe-ee4f-4320-837b-cff91d46c784
+2017-08-03T14:15:05.506115626 4424.982249s notice: Connected to server "OBLAP29_kpn" 739e9cfe-ee4f-4320-837b-cff91d46c784
+2017-08-03T14:55:41.674701202 6860.981281s notice: Disconnected from server "OBLAP29_kpn" 739e9cfe-ee4f-4320-837b-cff91d46c784
+2017-08-03T14:55:44.840320131 6864.146900s notice: Connected to server "OBLAP29_kpn" 739e9cfe-ee4f-4320-837b-cff91d46c784
+2017-08-04T12:52:43.441553643 0.712512s notice: Running rethinkdb 2.3.5~0xenial (GCC 5.3.1)...
+2017-08-04T12:52:43.445318386 0.716280s notice: Running on Linux 4.4.0-72-generic x86_64
+2017-08-04T12:52:43.445405197 0.716363s notice: Loading data from directory /var/www/html/node/seneca-email/rethinkdb_data
+2017-08-04T12:52:43.482614045 0.753572s info: Automatically using cache size of 2072 MB
+2017-08-04T12:52:43.483172779 0.754131s notice: Listening for intracluster connections on port 29015
+2017-08-04T12:52:43.485529054 0.756487s notice: Listening for client driver connections on port 28015
+2017-08-04T12:52:43.485767171 0.756725s notice: Listening for administrative HTTP connections on port 9292
+2017-08-04T12:52:43.485770472 0.756728s notice: Listening on cluster addresses: 127.0.0.1, 127.0.1.1
+2017-08-04T12:52:43.485775412 0.756733s notice: Listening on driver addresses: 127.0.0.1, 127.0.1.1
+2017-08-04T12:52:43.485777909 0.756736s notice: Listening on http addresses: 127.0.0.1, 127.0.1.1
+2017-08-04T12:52:43.485781722 0.756740s notice: To fully expose RethinkDB on the network, bind to all addresses by running rethinkdb with the `--bind all` command line option.
+2017-08-04T12:52:43.485786236 0.756744s notice: Server ready, "oblap28_1ey" 98c1cc52-3b56-4b51-bbc9-ca263431787c
+2017-08-04T12:52:48.188183083 5.459142s notice: A newer version of the RethinkDB server is available: 2.3.6. You can read the changelog at <https://github.com/rethinkdb/rethinkdb/releases>.
+2017-08-04T12:53:22.610266723 39.881225s info: Table c7121b2b-cb68-4a3f-8613-9942b1ec096b: Starting a new Raft election for term 1.
+2017-08-04T12:53:22.612657822 39.883616s info: Table c7121b2b-cb68-4a3f-8613-9942b1ec096b: Added replica on this server.
+2017-08-04T12:53:22.616219603 39.887178s info: Table c7121b2b-cb68-4a3f-8613-9942b1ec096b: This server is Raft leader for term 1. Latest log index is 0.
+2017-08-04T12:53:22.898275982 40.169234s info: Table c7121b2b-cb68-4a3f-8613-9942b1ec096b: Configuration is changing.
+2017-08-04T12:53:22.903497932 40.174456s info: Table c7121b2b-cb68-4a3f-8613-9942b1ec096b: Configuration is changing.
+2017-08-04T12:53:22.903512344 40.174470s info: Table c7121b2b-cb68-4a3f-8613-9942b1ec096b: Configuration is changing.
+2017-08-04T12:53:22.903514403 40.174472s info: Table c7121b2b-cb68-4a3f-8613-9942b1ec096b: Configuration is changing.
+2017-08-04T12:53:22.906767785 40.177726s info: Table c7121b2b-cb68-4a3f-8613-9942b1ec096b: Configuration is changing.
+2017-08-07T06:25:32.131076022 0.024398s notice: Running rethinkdb 2.3.5~0xenial (GCC 5.3.1)...
+2017-08-07T06:25:32.136496356 0.029823s notice: Running on Linux 4.4.0-72-generic x86_64
+2017-08-07T06:25:32.136597692 0.029920s notice: Loading data from directory /var/www/html/node/seneca-email/rethinkdb_data
+2017-08-07T06:25:32.171710587 0.065033s info: Automatically using cache size of 3551 MB
+2017-08-07T06:25:32.173588162 0.066910s notice: Listening for intracluster connections on port 29015
+2017-08-07T06:25:32.220867093 0.114189s notice: Listening for client driver connections on port 28015
+2017-08-07T06:25:32.221046352 0.114368s notice: Listening for administrative HTTP connections on port 9292
+2017-08-07T06:25:32.221061278 0.114383s notice: Listening on cluster addresses: 127.0.0.1, 127.0.1.1
+2017-08-07T06:25:32.221064127 0.114386s notice: Listening on driver addresses: 127.0.0.1, 127.0.1.1
+2017-08-07T06:25:32.221067067 0.114389s notice: Listening on http addresses: 127.0.0.1, 127.0.1.1
+2017-08-07T06:25:32.221075406 0.114397s notice: To fully expose RethinkDB on the network, bind to all addresses by running rethinkdb with the `--bind all` command line option.
+2017-08-07T06:25:32.221077903 0.114399s notice: Server ready, "oblap28_1ey" 98c1cc52-3b56-4b51-bbc9-ca263431787c
+2017-08-07T06:25:34.193255286 2.086577s info: Table c7121b2b-cb68-4a3f-8613-9942b1ec096b: Starting a new Raft election for term 2.
+2017-08-07T06:25:34.197236571 2.090559s info: Table c7121b2b-cb68-4a3f-8613-9942b1ec096b: This server is Raft leader for term 2. Latest log index is 9.
+2017-08-07T06:25:34.829249813 2.722572s notice: A newer version of the RethinkDB server is available: 2.3.6. You can read the changelog at <https://github.com/rethinkdb/rethinkdb/releases>.

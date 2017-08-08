@@ -1,8 +1,23 @@
 let senecaObj = require('seneca')
+
+let bodyData = {
+	"host":"smtp.gmail.com",
+	"port":465,
+	"secure":true,
+	"user":"obsoftcare@gmail.com",
+	"password":"Welcome123@",
+	"to":"abcd@vmail.officebrain.com",
+	"from":"info@vmail.officebrain.com",
+	"subject":"this is test mail",
+	"body":"this is message body"
+}
+
 senecaObj()
 	.use('mesh',{timeout: 999999})
-	.act({role: 'job', cmd: 'create'}, {to:'abc@vmail.com',from:'pqr1@vmail.com'}, (err, done) => {
-	if (err) { throw err; }
+	.act('role:job,cmd:create', bodyData, (err, done) => {
+	if (err) {
+		throw err
+	}
 	console.log('test-mesh done.', done)
 })
 
