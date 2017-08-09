@@ -1,4 +1,4 @@
-let senecaObj = require('seneca')
+let seneca = require('seneca')()
 
 let bodyData = {
 	"host":"smtp.gmail.com",
@@ -11,15 +11,33 @@ let bodyData = {
 	"subject":"this is test mail",
 	"body":"this is message body"
 }
+//
+// senecaObj()
+// 	.use('mesh',{timeout: 999999})
+// 	.act('role:job,cmd:create', bodyData, (err, done) => {
+//
+// 		console.log('test-mesh err.', err)
+// 	if (err) {
+// 		console.log('test-mesh err.', err)
+// 	}
+// 	console.log('test-mesh done.', done)
+// })
 
-senecaObj()
-	.use('mesh',{timeout: 999999})
-	.act('role:job,cmd:create', bodyData, (err, done) => {
-	if (err) {
-		throw err
-	}
-	console.log('test-mesh done.', done)
-})
+
+seneca.ready(function(err) {
+	seneca.client()
+	seneca.use('mesh', {
+		host: 'localhost'
+	});
+	seneca.act({role: 'job', cmd: 'create', msg: bodyData}, (err, done) => {
+		if (err) { throw err; }
+		console.log('test-mesh done.', done);
+	});
+	seneca.close((err) => {
+		if (err) { console.log(err); }
+		else { console.log('seneca closed.'); }
+	});
+});
 
 //let SenecaClient = senecaObj.client()
 

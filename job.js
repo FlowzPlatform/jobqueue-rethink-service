@@ -1,9 +1,10 @@
 const Queue = require('rethinkdb-job-queue')
+// const RethinkDBDash = require('rethinkdbdash')
 
 //139.59.35.45     //172.16.230.196
 const defaultConnectionOptions = {
-  host: 'localhost',
-  port: 28015,
+  host: '139.59.35.45',
+  port: 28016,
   db: 'jobQueue'
 }
 
@@ -12,40 +13,65 @@ const defaultQueueOption = {
 }
 
 module.exports = function job (options) {
+  let Seneca = this
   options = this.util.deepextend({
     queueOption: defaultQueueOption,
     connctionOption: defaultConnectionOptions
   }, options)
 
-  this.add('role:job,cmd:create', async function emailSend (msg, response) {
-    let {err, result} = await createRethinkJobQueue(msg)
-    if (err) {
+  this.add('role:job,cmd:create', async function (msg, response) {
+    // Seneca.error(response)
+    try {
+      // let {err, result} = await createRethinkJobQueue(msg)
+      await createRethinkJobQueue(msg)
+        .catch(err => {
+            response(err)
+        })
+        .then(result => {
+          response(null, result)
+        })
+    } catch (err) {
       response(err)
-    } else {
-      response(null, result)
     }
-  })
+  }).listen()
 
   let createRethinkJobQueue = async function (qdata) {
-    try {
-      let queueObj = await createJobQueue(options.connctionOption, options.queueOption)
-      queueObj.on('error', (err) => { throw err })
-      let job = await createJob(queueObj, { data: qdata })
-      let savedJobs
-      await addJob(queueObj, job)
-        .then(result => {
-          savedJobs = {'jobId': result[0].id}
+    return new Promise(async(resolve, reject) => {
+      try {
+        // check port number range
+        await checkPortNumber(options.connctionOption.port)
+        .catch(err => { reject(err) })
+        .then(async result => {
+          let queueObj = await createJobQueue(options.connctionOption, options.queueOption)
+          queueObj.on('error', (err) => { reject(err) })
+          let job = await createJob(queueObj, { data: qdata })
+          let savedJobs
+          await addJob(queueObj, job)
+            .then(result => {
+              savedJobs = {'jobId': result[0].id}
+            })
+            .catch(err => { reject(err) })
+          resolve(savedJobs)
         })
-        .catch(err => { throw err })
-      return {err: null, result: savedJobs}
-    } catch (err) {
-      return {err: customError(err), result: null}
-    }
+        // let dbDriver = await createRethinkdbDash(options.connctionOption)
+
+      } catch (err) {
+        reject(customError(err))
+      }
+    })
   }
 
-  let createJobQueue = function (connctionOption, queueOption) {
+  // let createRethinkdbDash = function (connctionOption) {
+  //   try {
+  //     return RethinkDBDash(connctionOption)
+  //   } catch (err) {
+  //     return (err)
+  //   }
+  // }
+
+  let createJobQueue = function (dbDriver, queueOption) {
     try {
-      return new Queue(connctionOption, queueOption)
+      return new Queue(dbDriver, queueOption)
     } catch (err) {
       return (err)
     }
@@ -80,4 +106,13 @@ let customError = function (err, errorCode) {
   }
   errRes['status'] = errorCode || 404
   return errRes
+}
+
+let checkPortNumber = function (port) {
+  return new Promise(async (resolve, reject) => {
+    if (port > 65535) {
+      reject({error: {message: 'port number should be less thne 65536'}})
+    }
+    resolve(true)
+  })
 }

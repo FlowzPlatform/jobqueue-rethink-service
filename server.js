@@ -1,8 +1,7 @@
 var seneca = require('seneca')
 
 let connctionOption1 = {
-	host: 'localhost',
-  port: 280156,
+  // port: 280164,
   db: 'jobQueue'
 }
 
@@ -12,7 +11,6 @@ seneca({tag:'job'})
   //.use('mesh', {isbase: true, pin: 'role:job,cmd:create', timeout: 999999})
   .use('mesh', {
     isbase: true,
-		timeout: 999999,
 		listen: [
 			{timeout: 999999, pin: 'role:job,cmd:create'}
 		]
