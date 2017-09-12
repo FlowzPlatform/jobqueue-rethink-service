@@ -1,0 +1,23 @@
+{
+  "pluginOptions" : {
+    "pin": "role:job,cmd:create"
+  },
+  "defaultConnection" : {
+    "host": "localhost",
+    "port": 28015,
+    "db": "jobQueue"
+  },
+  "defaultQueue" : {
+    "name": "FlowSchedule"
+  },
+  "defaultCreateJob" : {
+    "priority": "high",
+    "timeout": 666666,
+    "retrymax": 0,
+    "retrydelay": 2000
+  },
+  "web-option": {
+    "port": 4545,
+    "urlPrefix": "/job"
+  }
+}

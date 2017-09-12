@@ -2,23 +2,39 @@
 
 const Seneca = require('seneca')
 const Express = require('express')
+// const bodyParser = require('body-parser')
 const Web = require('seneca-web')
 const cors = require('cors')
 
+const webconfig = require('config')
+let pluginPin = 'role:job,cmd:create'
+if (webconfig.has('pluginOptions.pin')) {
+  pluginPin = webconfig.get('pluginOptions.pin')
+}
+let webPort = 4545
+if (webconfig.has('web-option.port')) {
+  webPort = webconfig.get('web-option.port')
+}
+
+let urlPrefix = 4545
+if (webconfig.has('web-option.urlPrefix')) {
+  urlPrefix = webconfig.get('web-option.urlPrefix')
+}
+
 var Routes = [{
-  prefix: '/job',
-  pin: 'role:job,cmd:create',
+  prefix: urlPrefix,
+  pin: pluginPin,
   map: {
-		create: {GET: false, POST: true}
-	}
+    create: {GET: false, POST: true}
+  }
 }]
 
 var seneca = Seneca()
 
 let expObj = Express()
 expObj.use(cors())
-// expObj.use(bodyParser.json());
-// expObj.use(bodyParser.urlencoded({ extended: false }));
+// expObj.use(bodyParser.json())
+// expObj.use(bodyParser.urlencoded({ extended: false }))
 
 var config = {
   routes: Routes,
@@ -32,7 +48,7 @@ seneca.client()
 .use('job')
 .ready(() => {
   var server = seneca.export('web/context')()
-  server.listen('4000', () => {
-    console.log('server started on: 4000')
+  server.listen(webPort, () => {
+    console.log('server started on: ', webPort)
   })
 })

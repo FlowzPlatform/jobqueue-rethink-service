@@ -1,31 +1,35 @@
 const Queue = require('rethinkdb-job-queue')
-// const RethinkDBDash = require('rethinkdbdash')
+const config = require('config')
 
-//139.59.35.45     //172.16.230.196
-const defaultConnectionOptions = {
-  host: '139.59.35.45',
-  port: 28016,
-  db: 'jobQueue'
+let pluginPin = 'role:job,cmd:create'
+if (config.has('pluginOptions.pin')) {
+  pluginPin = config.get('pluginOptions.pin')
 }
 
-const defaultQueueOption = {
-  name: 'SendEmail'
-}
+let dbConfig = config.get('defaultConnection')
+let qConfig = config.get('defaultQueue')
 
+const qCreateOption = config.get('defaultCreateJob')
+const defaultConnectionOptions = dbConfig
+const defaultQueueOption = qConfig
+const defaultCreateJobOption = qCreateOption
+
+// console.log(defaultConnectionOptions, defaultQueueOption, defaultCreateJobOption)
 module.exports = function job (options) {
-  let Seneca = this
   options = this.util.deepextend({
     queueOption: defaultQueueOption,
-    connctionOption: defaultConnectionOptions
+    connctionOption: defaultConnectionOptions,
+    createJobOption: defaultCreateJobOption
   }, options)
 
-  this.add('role:job,cmd:create', async function (msg, response) {
-    // Seneca.error(response)
+  this.add(pluginPin, async function (msg, response) {
     try {
-      // let {err, result} = await createRethinkJobQueue(msg)
+      if (msg.args !== undefined && msg.args.body !== undefined) {
+        msg = msg.args.body
+      }
       await createRethinkJobQueue(msg)
         .catch(err => {
-            response(err)
+          response(err)
         })
         .then(result => {
           response(null, result)
@@ -33,41 +37,33 @@ module.exports = function job (options) {
     } catch (err) {
       response(err)
     }
-  }).listen()
+  })
 
   let createRethinkJobQueue = async function (qdata) {
     return new Promise(async(resolve, reject) => {
       try {
         // check port number range
-        await checkPortNumber(options.connctionOption.port)
-        .catch(err => { reject(err) })
+        checkPortNumber(options.connctionOption.port)
         .then(async result => {
           let queueObj = await createJobQueue(options.connctionOption, options.queueOption)
-          queueObj.on('error', (err) => { reject(err) })
+          queueObj.on('error', (err) => { reject(customError(err)) })
           let job = await createJob(queueObj, { data: qdata })
           let savedJobs
           await addJob(queueObj, job)
             .then(result => {
               savedJobs = {'jobId': result[0].id}
             })
-            .catch(err => { reject(err) })
+            .catch(err => { customError(err) })
           resolve(savedJobs)
         })
+        .catch(err => { reject(err) })
         // let dbDriver = await createRethinkdbDash(options.connctionOption)
-
       } catch (err) {
+        // some system fatal error happend - no way to recover !!
         reject(customError(err))
       }
     })
   }
-
-  // let createRethinkdbDash = function (connctionOption) {
-  //   try {
-  //     return RethinkDBDash(connctionOption)
-  //   } catch (err) {
-  //     return (err)
-  //   }
-  // }
 
   let createJobQueue = function (dbDriver, queueOption) {
     try {
@@ -79,7 +75,24 @@ module.exports = function job (options) {
 
   let createJob = async function (queueObj, QData) {
     try {
-      return await queueObj.createJob({data: QData})
+      let qObj = await queueObj.createJob({data: QData})
+      // set job queue priority options
+      if (options.createJobOption.priority !== '') {
+        qObj.setPriority(options.createJobOption.priority)
+      }
+      // set job queue Timeout options
+      if (options.createJobOption.timeout !== '') {
+        qObj.setTimeout(options.createJobOption.timeout)
+      }
+      // set job queue RetryMax options
+      if (options.createJobOption.retrymax !== '') {
+        qObj.setRetryMax(options.createJobOption.retrymax)
+      }
+      // set job queue RetryDelay options
+      if (options.createJobOption.retrydelay !== '') {
+        qObj.setRetryDelay(options.createJobOption.retrydelay)
+      }
+      return qObj
     } catch (err) {
       return (err)
     }
@@ -89,8 +102,8 @@ module.exports = function job (options) {
     return new Promise(async (resolve, reject) => {
       try {
         await queueObj.addJob(job)
-                      .catch(err => { throw err })
                       .then(result => resolve(result))
+                      .catch(err => reject(err))
         // return added
       } catch (err) {
         reject(err)
@@ -102,17 +115,23 @@ module.exports = function job (options) {
 let customError = function (err, errorCode) {
   let errRes = {}
   errRes['error'] = {
-    'message': err.message || 'Service not avaialble'
+    'message': err.message || gErrMessages['ERR_SERVICE_UNAVAIALBLE']
   }
   errRes['status'] = errorCode || 404
   return errRes
 }
 
 let checkPortNumber = function (port) {
-  return new Promise(async (resolve, reject) => {
+  return new Promise((resolve, reject) => {
     if (port > 65535) {
-      reject({error: {message: 'port number should be less thne 65536'}})
+      reject({error: {message: gErrMessages['ERR_INVALID_PORT'], code: 'ERR_INVALID_PORT'}})
+    } else {
+      resolve(true)
     }
-    resolve(true)
   })
+}
+
+let gErrMessages = {
+  'ERR_INVALID_PORT': 'port number should be in the range [1, 65535]',
+  'ERR_SERVICE_UNAVAIALBLE': 'Service not avaialble'
 }

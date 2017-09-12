@@ -10,18 +10,13 @@ const queueOption1 = {
 }
 
 let bodyData = {
-	"host":"smtp.gmail.com",
-	"port":465,
-	"secure":true,
-	"user":"obsoftcare@gmail.com",
-	"password":"Welcome123@",
 	"to":"abcd@vmail.officebrain.com",
 	"from":"info@vmail.officebrain.com",
-	"subject":"this is test mail",
-	"body":"this is message body"
+	"subject":"Register successfully",
+	"body": "you are registered successfully on our site"
 }
 
-senecaObj.use('job').act({role:'job',cmd:'create'},bodyData, console.log)
+senecaObj.use('job').act('role:job,cmd:create',bodyData, console.log)
 
 // // Connection options have defaults and are not required
 // // You can replace these options with a rethinkdbdash driver object

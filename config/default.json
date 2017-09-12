@@ -1,0 +1,23 @@
+{
+  "pluginOptions" : {
+    "pin": "role:job,cmd:create"
+  },
+  "defaultConnection" : {
+    "host": "139.59.35.45",
+    "port": 28016,
+    "db": "jobQueue"
+  },
+  "defaultQueue" : {
+    "name": "Emails"
+  },
+  "defaultCreateJob" : {
+    "priority": "high",
+    "timeout": 666666,
+    "retrymax": 0,
+    "retrydelay": 2000
+  },
+  "web-option": {
+    "port": 4546,
+    "urlPrefix": "/job"
+  }
+}
