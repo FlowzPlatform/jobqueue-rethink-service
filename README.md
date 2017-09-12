@@ -1,7 +1,4 @@
-![Seneca]
-> A [Seneca.js][] RethinkDB job queue plugin
-
-# seneca-rethink-job-queue
+### seneca-rethink-job-queue
 
 A plugin that allows you to create rethinkdb-job-queue.
 
