@@ -89,8 +89,8 @@ seneca()
 ### Create Job as Rest API
 Start rest api service as
 node seneca-web.js
-===========================================
-make rest-api call like
+
+### make rest-api call like
 http://localhost:4546/job/create
 post data like as below
 {
