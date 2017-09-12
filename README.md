@@ -90,9 +90,12 @@ seneca()
 Start rest api service as
 node seneca-web.js
 
-### make rest-api call like
+### make rest-api call in PostMen
+
 http://localhost:4546/job/create
+
 post data like as below
+
 {
 	"to":"abcd@vmail.officebrain.com",
 	"from":"info@vmail.officebrain.com",
