@@ -16,7 +16,7 @@ const defaultCreateJobOption = qCreateOption
 
 // console.log(defaultConnectionOptions, defaultQueueOption, defaultCreateJobOption)
 module.exports = function job (options) {
-  let rethinkDBInfo
+  let rethinkDBInfo, newoptions
   options = this.util.deepextend({
     queueOption: defaultQueueOption,
     connctionOption: defaultConnectionOptions,
@@ -28,7 +28,6 @@ module.exports = function job (options) {
       if (msg.args !== undefined && msg.args.body !== undefined) {
         msg = JSON.parse(msg.args.body)
       }
-
       // if any option pass as parameter it will create jobs
       let newoption = {
         queueOption: msg.queueOption,
@@ -36,7 +35,7 @@ module.exports = function job (options) {
         createJobOption: msg.createJobOption
       }
       // console.log(newoption)
-      options = this.util.deepextend({
+      newoptions = this.util.deepextend({
         queueOption: options.queueOption,
         connctionOption: options.connctionOption,
         createJobOption: options.createJobOption
@@ -60,9 +59,9 @@ module.exports = function job (options) {
     return new Promise(async(resolve, reject) => {
       try {
         // check port number range
-        checkPortNumber(options.connctionOption.port)
+        checkPortNumber(newoptions.connctionOption.port)
         .then(async result => {
-          let queueObj = await createJobQueue(options.connctionOption, options.queueOption)
+          let queueObj = await createJobQueue(newoptions.connctionOption, newoptions.queueOption)
           queueObj.on('error', (err) => { reject(customError(err)) })
           let job = await createJob(queueObj, { data: qdata })
           let savedJobs
