@@ -8,7 +8,11 @@
     "db": "jobQueue"
   },
   "defaultQueue" : {
-    "name": "Emails"
+    "name": "RegistrationEmail",
+    "masterInterval": 310000,
+    "changeFeed": true,
+    "concurrency": 100,
+    "removeFinishedJobs": 2592000000
   },
   "defaultCreateJob" : {
     "priority": "high",

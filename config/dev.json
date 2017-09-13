@@ -8,7 +8,11 @@
     "db": "jobQueue"
   },
   "defaultQueue" : {
-    "name": "FlowSchedule"
+    "name": "RegistrationEmail",
+    "masterInterval": 310000,
+    "changeFeed": true,
+    "concurrency": 100,
+    "removeFinishedJobs": 2592000000
   },
   "defaultCreateJob" : {
     "priority": "high",
@@ -17,7 +21,7 @@
     "retrydelay": 2000
   },
   "web-option": {
-    "port": 4545,
+    "port": 4546,
     "urlPrefix": "/job"
   }
 }
