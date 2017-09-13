@@ -3,7 +3,7 @@
     "pin": "role:job,cmd:create"
   },
   "defaultConnection" : {
-    "host": "localhost",
+    "host": "rjobDB",
     "port": 28015,
     "db": "jobQueue"
   },
@@ -21,7 +21,7 @@
     "retrydelay": 2000
   },
   "web-option": {
-    "port": 4546,
+    "port": 5000,
     "urlPrefix": "/job"
   }
 }
