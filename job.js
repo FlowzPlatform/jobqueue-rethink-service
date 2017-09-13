@@ -16,6 +16,7 @@ const defaultCreateJobOption = qCreateOption
 
 // console.log(defaultConnectionOptions, defaultQueueOption, defaultCreateJobOption)
 module.exports = function job (options) {
+  let rethinkDBInfo
   options = this.util.deepextend({
     queueOption: defaultQueueOption,
     connctionOption: defaultConnectionOptions,
@@ -25,14 +26,30 @@ module.exports = function job (options) {
   this.add(pluginPin, async function (msg, response) {
     try {
       if (msg.args !== undefined && msg.args.body !== undefined) {
-        msg = msg.args.body
+        msg = JSON.parse(msg.args.body)
       }
+
+      // if any option pass as parameter it will create jobs
+      let newoption = {
+        queueOption: msg.queueOption,
+        connctionOption: msg.connctionOption,
+        createJobOption: msg.createJobOption
+      }
+      // console.log(newoption)
+      options = this.util.deepextend({
+        queueOption: options.queueOption,
+        connctionOption: options.connctionOption,
+        createJobOption: options.createJobOption
+      }, newoption)
+
       await createRethinkJobQueue(msg)
-        .catch(err => {
-          response(err)
-        })
         .then(result => {
+          result.connctionInfo = rethinkDBInfo
           response(null, result)
+        })
+        .catch(err => {
+          err.connctionInfo = rethinkDBInfo
+          response(err)
         })
     } catch (err) {
       response(err)
@@ -67,6 +84,7 @@ module.exports = function job (options) {
 
   let createJobQueue = function (dbDriver, queueOption) {
     try {
+      rethinkDBInfo = {'jobHost': dbDriver.host + ':' + dbDriver.port, 'jobDB': dbDriver.db, 'jobType': queueOption.name}
       return new Queue(dbDriver, queueOption)
     } catch (err) {
       return (err)

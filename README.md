@@ -13,6 +13,7 @@ tutorials to sample apps to help get you up and running quickly.
 To install, simply use npm. Remember you will need to install [Seneca.js][] if you haven't already.
 
 ```
+npm install
 npm install seneca-rethink-job-queue
 ```
 
@@ -93,9 +94,31 @@ http://localhost:4546/job/create
 
 post data like as below
 
+```
 {
 	"to":"abcd@vmail.officebrain.com",
 	"from":"info@vmail.officebrain.com",
 	"subject":"this is test mail",
 	"body":"this is message body"
 }
+```
+## parameter options
+
+post data like as below
+
+```
+{
+  "connctionOption" : {
+    "host": "localhost",
+    "port": 28015,
+    "db": "job-queue"
+  },
+  "queueOption" : {
+    "name": "registartion"
+  },
+	"to":"abcd@vmail.officebrain.com",
+	"from":"info@vmail.officebrain.com",
+	"subject":"this is test mail",
+	"body":"this is message body"
+}
+```
