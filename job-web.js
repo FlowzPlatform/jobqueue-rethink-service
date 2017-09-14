@@ -29,7 +29,10 @@ var Routes = [{
   }
 }]
 
-var seneca = Seneca()
+var seneca = Seneca({
+  internal: { logger: require('seneca-demo-logger') },
+  debug: { short_logs: true }
+})
 
 let expObj = Express()
 expObj.use(cors())

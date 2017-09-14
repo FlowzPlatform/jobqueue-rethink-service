@@ -8,20 +8,13 @@
     "db": "jobQueue"
   },
   "defaultQueue" : {
-    "name": "RegistrationEmail",
-    "masterInterval": 310000,
-    "changeFeed": true,
-    "concurrency": 100,
-    "removeFinishedJobs": 2592000000
+    "name": "RegistrationEmail"
   },
   "defaultCreateJob" : {
-    "priority": "high",
-    "timeout": 666666,
-    "retrymax": 0,
-    "retrydelay": 2000
+    "priority": "high"
   },
   "web-option": {
-    "port": 5000,
+    "port": 4545,
     "urlPrefix": "/job"
   }
 }

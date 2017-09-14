@@ -90,7 +90,7 @@ node seneca-web.js
 
 ### make rest-api call in PostMen
 
-http://localhost:4546/job/create
+http://localhost:5000/job/create
 
 post data like as below
 

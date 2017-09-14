@@ -40,7 +40,7 @@ module.exports = function job (options) {
         connctionOption: options.connctionOption,
         createJobOption: options.createJobOption
       }, newoption)
-
+      // console.log(newoptions)
       await createRethinkJobQueue(msg)
         .then(result => {
           result.connctionInfo = rethinkDBInfo
