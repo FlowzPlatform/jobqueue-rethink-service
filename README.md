@@ -1,6 +1,6 @@
-### seneca-rethink-job-queue
+### seneca-rethink-jobqueue
 
-A plugin that allows you to create rethinkdb-job-queue.
+A plugin that allows you to create rethinkdb-jobqueue.
 
 
 If you're using this module, and need help, you can:
@@ -14,7 +14,7 @@ To install, simply use npm. Remember you will need to install [Seneca.js][] if y
 
 ```
 npm install
-npm install seneca-rethink-job-queue
+npm install seneca-rethink-jobqueue
 ```
 
 ## Usage in the same process
@@ -111,7 +111,7 @@ post data like as below
   "connctionOption" : {
     "host": "localhost",
     "port": 28015,
-    "db": "job-queue"
+    "db": "jobqueue"
   },
   "queueOption" : {
     "name": "registartion"
@@ -120,5 +120,36 @@ post data like as below
 	"from":"info@vmail.officebrain.com",
 	"subject":"this is test mail",
 	"body":"this is message body"
+}
+```
+
+### find job using REST API
+
+http://localhost:5000/job/create
+
+post data like as below
+
+```
+"findVal": {
+	"status":"waiting"
+	}
+```
+## more parameter options
+
+post data like as below
+
+```
+{
+  "connctionOption" : {
+    "host": "localhost",
+    "port": 28015,
+    "db": "jobqueue"
+  },
+  "queueOption" : {
+    "name": "registartion"
+  },
+  "findVal": {
+  	"data":{"subject":"this is test mail"}
+  }
 }
 ```
