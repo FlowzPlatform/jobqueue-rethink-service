@@ -11,23 +11,34 @@ let pluginPin = 'role:job,cmd:create'
 if (webconfig.has('pluginOptions.pin')) {
   pluginPin = webconfig.get('pluginOptions.pin')
 }
+let pluginFind = 'role:job,cmd:findjob'
+
 let webPort = 4545
 if (webconfig.has('web-option.port')) {
   webPort = webconfig.get('web-option.port')
 }
 
-let urlPrefix = 4545
+let urlPrefix = '/job'
 if (webconfig.has('web-option.urlPrefix')) {
   urlPrefix = webconfig.get('web-option.urlPrefix')
 }
 
-var Routes = [{
-  prefix: urlPrefix,
-  pin: pluginPin,
-  map: {
-    create: {GET: false, POST: true}
+var Routes = [
+  {
+    prefix: urlPrefix,
+    pin: pluginPin,
+    map: {
+      create: {GET: false, POST: true}
+    }
+  },
+  {
+    prefix: urlPrefix,
+    pin: pluginFind,
+    map: {
+      findjob: {GET: false, POST: true}
+    }
   }
-}]
+]
 
 var seneca = Seneca({
 //  internal: { logger: require('seneca-demo-logger') },

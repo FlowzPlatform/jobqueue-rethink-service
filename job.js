@@ -1,29 +1,38 @@
 const Queue = require('rethinkdb-job-queue')
 const config = require('config')
 
-let pluginPin = 'role:job,cmd:create'
+let pluginCreate = 'role:job,cmd:create'
+let pluginFind = 'role:job,cmd:findjob'
 if (config.has('pluginOptions.pin')) {
-  pluginPin = config.get('pluginOptions.pin')
+  pluginCreate = config.get('pluginOptions.pin')
 }
 
 let dbConfig = config.get('defaultConnection')
 let qConfig = config.get('defaultQueue')
 
 const qCreateOption = config.get('defaultCreateJob')
-const defaultConnectionOptions = dbConfig
-const defaultQueueOption = qConfig
-const defaultCreateJobOption = qCreateOption
 
+const defaultOption = {
+  connctionOption: dbConfig,
+  queueOption: qConfig,
+  createJobOption: qCreateOption
+}
 // console.log(defaultConnectionOptions, defaultQueueOption, defaultCreateJobOption)
 module.exports = function job (options) {
   let rethinkDBInfo, newoptions
-  options = this.util.deepextend({
-    queueOption: defaultQueueOption,
-    connctionOption: defaultConnectionOptions,
-    createJobOption: defaultCreateJobOption
-  }, options)
+  let plugin = this
 
-  this.add(pluginPin, async function (msg, response) {
+  let mergeOptions = function (fOptions, mOption) {
+    return plugin.util.deepextend({
+      queueOption: fOptions.queueOption,
+      connctionOption: fOptions.connctionOption,
+      createJobOption: fOptions.createJobOption
+    }, mOption)
+  }
+
+  options = mergeOptions(defaultOption, options)
+
+  this.add(pluginCreate, async function (msg, response) {
     try {
       if (msg.args !== undefined && msg.args.body !== undefined) {
         msg = JSON.parse(msg.args.body)
@@ -34,12 +43,8 @@ module.exports = function job (options) {
         connctionOption: msg.connctionOption,
         createJobOption: msg.createJobOption
       }
-
-      newoptions = this.util.deepextend({
-        queueOption: options.queueOption,
-        connctionOption: options.connctionOption,
-        createJobOption: options.createJobOption
-      }, newoption)
+      // Merge Options
+      newoptions = mergeOptions(options, newoption)
 
       await createRethinkJobQueue(msg)
         .then(result => {
@@ -55,6 +60,64 @@ module.exports = function job (options) {
     }
   })
 
+  this.add(pluginFind, async function (msg, response) {
+    try {
+      if (msg.args !== undefined && msg.args.body !== undefined) {
+        msg = JSON.parse(msg.args.body)
+      }
+      // if any option pass as parameter it will create jobs
+      let newoption = {
+        queueOption: msg.queueOption,
+        connctionOption: msg.connctionOption,
+        createJobOption: msg.createJobOption
+      }
+      // Merge Options
+      newoptions = mergeOptions(options, newoption)
+
+      await findRethinkJob(msg)
+        .then(result => {
+          result.connctionInfo = rethinkDBInfo
+          response(null, result)
+        })
+        .catch(err => {
+          err.connctionInfo = rethinkDBInfo
+          response(err)
+        })
+    } catch (err) {
+      response(err)
+    }
+  })
+
+  let findRethinkJob = async function (qdata) {
+    return new Promise(async(resolve, reject) => {
+      try {
+        // check port number range
+        checkPortNumber(newoptions.connctionOption.port)
+        .then(async result => {
+          let queueObj = await createJobQueue(newoptions.connctionOption, newoptions.queueOption)
+          queueObj.on('error', (err) => {
+            // err object is system error
+            reject(customError(err))
+          })
+
+          await findJob(queueObj, qdata.findVal)
+            .then(result => {
+              resolve(result)
+            })
+            .catch(err => { customError(err) })
+        })
+        .catch(err => {
+          // this is return custom error
+          reject(err)
+        })
+        // let dbDriver = await createRethinkdbDash(options.connctionOption)
+      } catch (err) {
+        // some system fatal error happend - no way to recover !!
+        reject(customError(err))
+      }
+    })
+  }
+
   let createRethinkJobQueue = async function (qdata) {
     return new Promise(async(resolve, reject) => {
       try {
@@ -66,7 +129,7 @@ module.exports = function job (options) {
             // err object is system error
             reject(customError(err))
           })
-          let job = await createJob(queueObj, { data: qdata })
+          let job = await createJob(queueObj, qdata)
           let savedJobs
           await addJob(queueObj, job)
             .then(result => {
@@ -131,6 +194,21 @@ module.exports = function job (options) {
                       }
                     )
         // return added
+      } catch (err) {
+        reject(err)
+      }
+    })
+  }
+
+  // find job from rethinkDB
+  let findJob = async function (queueObj, val) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        queueObj.findJob(val,true).then((jobs) => {
+          // jobs will either be an empty array
+          // or an array of Job objects
+          resolve(jobs)
+        }).catch(err => reject(err))
       } catch (err) {
         reject(err)
       }
