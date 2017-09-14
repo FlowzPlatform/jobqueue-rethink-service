@@ -11,6 +11,7 @@ let pluginPin = 'role:job,cmd:create'
 if (webconfig.has('pluginOptions.pin')) {
   pluginPin = webconfig.get('pluginOptions.pin')
 }
+
 let pluginFind = 'role:job,cmd:findjob'
 
 let webPort = 4545
