@@ -11,10 +11,13 @@
     "name": "RegistrationEmail"
   },
   "defaultCreateJob" : {
-    "priority": "high"
+    "priority": "normal",
+    "timeout": 300000,
+    "retrymax": 3,
+    "retrydelay": 600000
   },
   "web-option": {
-    "port": 4545,
+    "port": 5000,
     "urlPrefix": "/job"
   }
 }

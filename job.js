@@ -34,13 +34,13 @@ module.exports = function job (options) {
         connctionOption: msg.connctionOption,
         createJobOption: msg.createJobOption
       }
-      // console.log(newoption)
+
       newoptions = this.util.deepextend({
         queueOption: options.queueOption,
         connctionOption: options.connctionOption,
         createJobOption: options.createJobOption
       }, newoption)
-      // console.log(newoptions)
+
       await createRethinkJobQueue(msg)
         .then(result => {
           result.connctionInfo = rethinkDBInfo
@@ -62,7 +62,10 @@ module.exports = function job (options) {
         checkPortNumber(newoptions.connctionOption.port)
         .then(async result => {
           let queueObj = await createJobQueue(newoptions.connctionOption, newoptions.queueOption)
-          queueObj.on('error', (err) => { reject(customError(err)) })
+          queueObj.on('error', (err) => {
+            // err object is system error
+            reject(customError(err))
+          })
           let job = await createJob(queueObj, { data: qdata })
           let savedJobs
           await addJob(queueObj, job)
@@ -72,7 +75,10 @@ module.exports = function job (options) {
             .catch(err => { customError(err) })
           resolve(savedJobs)
         })
-        .catch(err => { reject(err) })
+        .catch(err => {
+          // this is return custom error
+          reject(err)
+        })
         // let dbDriver = await createRethinkdbDash(options.connctionOption)
       } catch (err) {
         // some system fatal error happend - no way to recover !!
@@ -120,7 +126,10 @@ module.exports = function job (options) {
       try {
         await queueObj.addJob(job)
                       .then(result => resolve(result))
-                      .catch(err => reject(err))
+                      .catch(err => {
+                        reject(err)
+                      }
+                    )
         // return added
       } catch (err) {
         reject(err)
@@ -130,9 +139,13 @@ module.exports = function job (options) {
 }
 
 let customError = function (err, errorCode) {
+  let errorKey = 'ERR_SERVICE_UNAVAIALBLE'
+  if (err['ReqlDriverError'] !== '') {
+    errorKey = 'ERR_REQLDRIVERERROR'
+  }
   let errRes = {}
   errRes['error'] = {
-    'message': err.message || gErrMessages['ERR_SERVICE_UNAVAIALBLE']
+    'message': gErrMessages[errorKey] || gErrMessages['ERR_SERVICE_UNAVAIALBLE']
   }
   errRes['status'] = errorCode || 404
   return errRes
@@ -150,5 +163,6 @@ let checkPortNumber = function (port) {
 
 let gErrMessages = {
   'ERR_INVALID_PORT': 'port number should be in the range [1, 65535]',
-  'ERR_SERVICE_UNAVAIALBLE': 'Service not avaialble'
+  'ERR_SERVICE_UNAVAIALBLE': 'Service not avaialble',
+  'ERR_REQLDRIVERERROR': 'RethinkDB service unavaialble'
 }

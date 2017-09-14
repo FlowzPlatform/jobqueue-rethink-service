@@ -30,8 +30,8 @@ var Routes = [{
 }]
 
 var seneca = Seneca({
-  internal: { logger: require('seneca-demo-logger') },
-  debug: { short_logs: true }
+//  internal: { logger: require('seneca-demo-logger') },
+//  debug: { short_logs: true }
 })
 
 let expObj = Express()
