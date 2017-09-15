@@ -10,8 +10,8 @@ const queueOption1 = {
 }
 
 let bodyData = {
-	"to":"abcd@vmail.officebrain.com",
-	"from":"info@vmail.officebrain.com",
+	"to":"abcd@yourdomain.com",
+	"from":"info@yourdomain.com",
 	"subject":"Register successfully",
 	"body": "you are registered successfully on our site"
 }

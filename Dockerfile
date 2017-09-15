@@ -5,4 +5,4 @@ WORKDIR /usr/src/app/
 RUN cd /usr/src/app/
 RUN npm install
 EXPOSE 5000
-CMD npm start
+CMD node job-web.js

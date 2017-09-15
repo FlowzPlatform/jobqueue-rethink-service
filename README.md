@@ -13,7 +13,6 @@ tutorials to sample apps to help get you up and running quickly.
 To install, simply use npm. Remember you will need to install [Seneca.js][] if you haven't already.
 
 ```
-npm install
 npm install seneca-rethink-jobqueue
 ```
 
@@ -32,8 +31,8 @@ const queueOption1 = {
 }
 
 let bodyData = {
-	"to":"abcd@vmail.officebrain.com",
-	"from":"info@vmail.officebrain.com",
+	"to":"abcd@yourdomain.com",
+	"from":"info@yourdomain.com",
 	"subject":"Register successfully",
 	"body": "you are registered successfully on our site"
 }
@@ -53,8 +52,8 @@ let seneca = require('seneca')
 let pluginPin = 'role:job,cmd:create'
 
 let bodyData = {
-	"to":"abcd@vmail.officebrain.com",
-	"from":"info@vmail.officebrain.com",
+	"to":"abcd@yourdomain.com",
+	"from":"info@yourdomain.com",
 	"subject":"this is test mail",
 	"body":"this is message body"
 }
@@ -97,8 +96,8 @@ post data like as below
 
 ```
 {
-	"to":"abcd@vmail.officebrain.com",
-	"from":"info@vmail.officebrain.com",
+	"to":"abcd@yourdomain.com",
+	"from":"info@yourdomain.com",
 	"subject":"this is test mail",
 	"body":"this is message body"
 }
@@ -117,8 +116,8 @@ post data like as below
   "queueOption" : {
     "name": "registartion"
   },
-	"to":"abcd@vmail.officebrain.com",
-	"from":"info@vmail.officebrain.com",
+	"to":"abcd@yourdomain.com",
+	"from":"info@yourdomain.com",
 	"subject":"this is test mail",
 	"body":"this is message body"
 }
