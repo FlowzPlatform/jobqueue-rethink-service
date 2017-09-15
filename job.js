@@ -23,20 +23,50 @@ module.exports = function job (options) {
   let plugin = this
 
   let mergeOptions = function (fOptions, mOption) {
-    return plugin.util.deepextend({
-      queueOption: fOptions.queueOption,
-      connctionOption: fOptions.connctionOption,
-      createJobOption: fOptions.createJobOption
-    }, mOption)
+    try {
+      return plugin.util.deepextend({
+        queueOption: fOptions.queueOption,
+        connctionOption: fOptions.connctionOption,
+        createJobOption: fOptions.createJobOption
+      }, mOption)
+    } catch (err) {
+      return
+    }
   }
 
   options = mergeOptions(defaultOption, options)
 
+  let validateRequestBody = function (msg) {
+    var contype = msg.request$.headers['content-type']
+    if (!contype || contype.indexOf('application/json') !== 0) {
+      let err = {error: {message: gErrMessages['ERR_CONTENT_TYPE'], code: 'ERR_CONTENT_TYPE'}}
+      return [err, null]
+    }
+
+    if (msg.args !== undefined && msg.args.body !== undefined && msg.args.body !== '') {
+      try {
+        let paserBody = JSON.parse(msg.args.body)
+        return [null, paserBody]
+      } catch (err) {
+        let err1 = {error: {message: gErrMessages['ERR_INVALID_PRAMATER'], code: 'ERR_INVALID_PRAMATER'}}
+        return [err1, null]
+      }
+    } else {
+      let err = {error: {message: gErrMessages['ERR_PRAMATER_MISSING'], code: 'ERR_INVALID_PORT'}}
+      return [err, null]
+    }
+  }
+
   this.add(pluginCreate, async function (msg, response) {
     try {
-      if (msg.args !== undefined && msg.args.body !== undefined) {
-        msg = JSON.parse(msg.args.body)
+      // validate parameter
+      let validParamErr
+      [validParamErr, msg] = validateRequestBody(msg)
+      if (validParamErr) {
+        response(validParamErr)
+        return false
       }
+
       // if any option pass as parameter it will create jobs
       let newoption = {
         queueOption: msg.queueOption,
@@ -62,9 +92,14 @@ module.exports = function job (options) {
 
   this.add(pluginFind, async function (msg, response) {
     try {
-      if (msg.args !== undefined && msg.args.body !== undefined) {
-        msg = JSON.parse(msg.args.body)
+      // validate parameter
+      let validParamErr
+      [validParamErr, msg] = validateRequestBody(msg)
+      if (validParamErr) {
+        response(validParamErr)
+        return false
       }
+
       // if any option pass as parameter it will create jobs
       let newoption = {
         queueOption: msg.queueOption,
@@ -204,7 +239,7 @@ module.exports = function job (options) {
   let findJob = async function (queueObj, val) {
     return new Promise(async (resolve, reject) => {
       try {
-        queueObj.findJob(val,true).then((jobs) => {
+        queueObj.findJob(val, true).then((jobs) => {
           // jobs will either be an empty array
           // or an array of Job objects
           resolve(jobs)
@@ -223,7 +258,8 @@ let customError = function (err, errorCode) {
   }
   let errRes = {}
   errRes['error'] = {
-    'message': gErrMessages[errorKey] || gErrMessages['ERR_SERVICE_UNAVAIALBLE']
+    'message': gErrMessages[errorKey] || gErrMessages['ERR_SERVICE_UNAVAIALBLE'],
+    'system_message': err.msg || ''
   }
   errRes['status'] = errorCode || 404
   return errRes
@@ -242,5 +278,8 @@ let checkPortNumber = function (port) {
 let gErrMessages = {
   'ERR_INVALID_PORT': 'port number should be in the range [1, 65535]',
   'ERR_SERVICE_UNAVAIALBLE': 'Service not avaialble',
-  'ERR_REQLDRIVERERROR': 'RethinkDB service unavaialble'
+  'ERR_REQLDRIVERERROR': 'RethinkDB service unavaialble',
+  'ERR_PRAMATER_MISSING': 'job data missing, Please provide body as paramater',
+  'ERR_CONTENT_TYPE': 'Content-Type should be application/json',
+  'ERR_INVALID_PRAMATER': 'Please provide valid paramater'
 }
