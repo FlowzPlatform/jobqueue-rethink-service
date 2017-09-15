@@ -21,7 +21,7 @@ const defaultOption = {
 module.exports = function job (options) {
   let rethinkDBInfo, newoptions
   let plugin = this
-
+  let priority = ['lowest', 'low', 'normal', 'medium', 'high', 'highest']
   let mergeOptions = function (fOptions, mOption) {
     try {
       return plugin.util.deepextend({
@@ -30,7 +30,7 @@ module.exports = function job (options) {
         createJobOption: fOptions.createJobOption
       }, mOption)
     } catch (err) {
-      return
+      return fOptions
     }
   }
 
@@ -168,7 +168,7 @@ module.exports = function job (options) {
           let savedJobs
           await addJob(queueObj, job)
             .then(result => {
-              savedJobs = {'jobId': result[0].id}
+              savedJobs = result // {'jobId': result[0].id}
             })
             .catch(err => { customError(err) })
           resolve(savedJobs)
@@ -196,40 +196,94 @@ module.exports = function job (options) {
 
   let createJob = async function (queueObj, QData) {
     try {
-      let qObj = await queueObj.createJob({data: QData})
-      // set job queue priority options
-      if (options.createJobOption.priority !== '') {
-        qObj.setPriority(options.createJobOption.priority)
+      delete QData.queueOption
+      delete QData.connctionOption
+      // delete QData.createJobOption
+      let jobs = []
+      if (QData.jobs !== undefined && Array.isArray(QData.jobs)) {
+        for (let i = 0; i < QData.jobs.length; i++) {
+          let jobObj = await singleCreateJobObj(queueObj, QData.jobs[i])
+          //console.log("=====new jobs======",jobObj)
+          jobs.push(jobObj)
+        }
+      } else {
+        jobs = await singleCreateJobObj(queueObj, QData)
       }
-      // set job queue Timeout options
-      if (options.createJobOption.timeout !== '') {
-        qObj.setTimeout(options.createJobOption.timeout)
-      }
-      // set job queue RetryMax options
-      if (options.createJobOption.retrymax !== '') {
-        qObj.setRetryMax(options.createJobOption.retrymax)
-      }
-      // set job queue RetryDelay options
-      if (options.createJobOption.retrydelay !== '') {
-        qObj.setRetryDelay(options.createJobOption.retrydelay)
-      }
-      return qObj
+      return jobs
     } catch (err) {
       return (err)
     }
   }
 
+  let singleCreateJobObj = function (queueObj, jData) {
+    return new Promise(async (resolve, reject) => {
+      // if any option pass as parameter it will create jobs
+      let newCreateJoboption = {
+        createJobOption: jData.createJobOption
+      }
+      //console.log("===============",newCreateJoboption,"========",newoptions.createJobOption)
+      // Merge Options
+      try {
+        newCreateJoboption = plugin.util.deepextend({
+          createJobOption: newoptions.createJobOption
+        }, newCreateJoboption)
+      } catch (err) {}
+      //console.log("=======new options========",newCreateJoboption)
+
+      let qObj = await queueObj.createJob({data: jData})
+      // set job queue priority options
+
+      if (newCreateJoboption.createJobOption.priority !== 'undefined'
+          && newCreateJoboption.createJobOption.priority !== ''
+          && priority.includes(newCreateJoboption.createJobOption.priority)) {
+        qObj.setPriority(newCreateJoboption.createJobOption.priority)
+      }
+      // set job queue Timeout options
+      if (newCreateJoboption.createJobOption.timeout !== 'undefined' &&
+          newCreateJoboption.createJobOption.timeout !== '' &&
+          typeof (newCreateJoboption.createJobOption.timeout) === 'number') {
+        qObj.setTimeout(newCreateJoboption.createJobOption.timeout)
+      }
+      // set job queue RetryMax options
+      if (newCreateJoboption.createJobOption.retrymax !== 'undefined' &&
+        newCreateJoboption.createJobOption.retrymax !== '' &&
+        typeof (newCreateJoboption.createJobOption.retrymax) === 'number') {
+        qObj.setRetryMax(newCreateJoboption.createJobOption.retrymax)
+      }
+      // set job queue RetryDelay options
+      if (newCreateJoboption.createJobOption.retrydelay !== 'undefined' &&
+          newCreateJoboption.createJobOption.retrydelay !== '' &&
+          typeof newCreateJoboption.createJobOption.retrydelay === 'number') {
+        qObj.setRetryDelay(newCreateJoboption.createJobOption.retrydelay)
+      }
+      // set job queue RetryDelay options
+      if (newCreateJoboption.createJobOption.name !== 'undefined' &&
+          newCreateJoboption.createJobOption.name !== '' &&
+          typeof newCreateJoboption.createJobOption.name === 'string') {
+        qObj.setName(newCreateJoboption.createJobOption.name)
+      }
+      resolve(qObj)
+    })
+
+  }
+
   let addJob = async function (queueObj, job) {
     return new Promise(async (resolve, reject) => {
       try {
+        //console.log("=====add jobs======",job)
         await queueObj.addJob(job)
-                      .then(result => resolve(result))
+                      .then(result => {
+                        result = {jobId: result.map(function (a) { return a.id })}
+                        //console.log("=========================",result)
+                        resolve(result)
+                      })
                       .catch(err => {
                         reject(err)
                       }
                     )
         // return added
       } catch (err) {
+        //console.log("========addjob==catch========",err)
         reject(err)
       }
     })

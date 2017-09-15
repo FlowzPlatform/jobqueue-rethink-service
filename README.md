@@ -83,12 +83,12 @@ seneca()
 	})
 ```
 
-### Create Job with Rest API
+### Create Job using Rest API
 Start rest api service as
 ```
 node seneca-web.js
 ```
-## make rest-api call using PostMen
+#### make rest-api call using PostMen
 
 http://localhost:5000/job/create
 
@@ -102,7 +102,7 @@ post data like as below
 	"body":"this is message body"
 }
 ```
-## parameter options
+#### parameter options
 
 post data like as below
 
@@ -134,7 +134,7 @@ post data like as below
 	"status":"waiting"
 	}
 ```
-## more parameter options
+#### more parameter options
 
 post data like as below
 
