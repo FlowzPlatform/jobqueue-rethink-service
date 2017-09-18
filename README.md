@@ -123,14 +123,68 @@ post data like as below
 }
 ```
 
-### find job using REST API
-
-http://localhost:5000/job/findjob
+#### multiple job created
 
 post data like as below
 
 ```
-"findVal": {
+{
+	"connction" : {
+		"host":"localhost",
+	    "port": 28015,
+	    "db": "jobqueue"
+	  },
+	  "queue" : {
+	    "name": "registartion"
+	  },
+	  "options" : {
+	    "priority": "normal",
+	    "timeout": 499999,
+	    "retrymax": 1,
+	    "retrydelay": 500000
+	  },
+
+	"jobs" : [
+		{
+			"subject":"this is test mail-1",
+			"options" : {
+			    "priority": "high",
+			    "timeout": 700000,
+			    "retrymax": 5,
+			    "retrydelay": 100000
+			  }
+		},
+		{
+			"subject":"this is test mail-2",
+			"options" : {
+				"priority": "highest",
+			    "timeout": 700000,
+			    "retrymax": 4,
+			    "retrydelay": 100000,
+			    "name" :"Password-Update-Mail"
+			}
+		},
+		{
+			"subject":"this is test mail-3",
+			"options" : {
+			    "priority": "medium",
+			    "timeout": 700000,
+			    "retrymax": 3,
+			    "retrydelay": 100000
+			  }
+		}
+	]
+}
+```
+
+### find job using REST API
+
+http://localhost:5000/job/find
+
+post data like as below
+
+```
+"find": {
 	"status":"waiting"
 	}
 ```
@@ -140,15 +194,15 @@ post data like as below
 
 ```
 {
-  "connctionOption" : {
+  "connction" : {
     "host": "localhost",
     "port": 28015,
     "db": "jobqueue"
   },
-  "queueOption" : {
+  "queue" : {
     "name": "registartion"
   },
-  "findVal": {
+  "find": {
   	"data":{"subject":"this is test mail"}
   }
 }

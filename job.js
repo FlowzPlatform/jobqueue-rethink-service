@@ -13,9 +13,9 @@ let qConfig = config.get('defaultQueue')
 const qCreateOption = config.get('defaultCreateJob')
 
 const defaultOption = {
-  connctionOption: dbConfig,
-  queueOption: qConfig,
-  createJobOption: qCreateOption
+  connction: dbConfig,
+  queue: qConfig,
+  options: qCreateOption
 }
 // console.log(defaultConnectionOptions, defaultQueueOption, defaultCreateJobOption)
 module.exports = function job (options) {
@@ -25,9 +25,9 @@ module.exports = function job (options) {
   let mergeOptions = function (fOptions, mOption) {
     try {
       return plugin.util.deepextend({
-        queueOption: fOptions.queueOption,
-        connctionOption: fOptions.connctionOption,
-        createJobOption: fOptions.createJobOption
+        queue: fOptions.queue,
+        connction: fOptions.connction,
+        options: fOptions.options
       }, mOption)
     } catch (err) {
       return fOptions
@@ -69,9 +69,9 @@ module.exports = function job (options) {
 
       // if any option pass as parameter it will create jobs
       let newoption = {
-        queueOption: msg.queueOption,
-        connctionOption: msg.connctionOption,
-        createJobOption: msg.createJobOption
+        queue: msg.queue,
+        connction: msg.connction,
+        options: msg.options
       }
       // Merge Options
       newoptions = mergeOptions(options, newoption)
@@ -102,9 +102,9 @@ module.exports = function job (options) {
 
       // if any option pass as parameter it will create jobs
       let newoption = {
-        queueOption: msg.queueOption,
-        connctionOption: msg.connctionOption,
-        createJobOption: msg.createJobOption
+        queue: msg.queue,
+        connction: msg.connction,
+        options: msg.options
       }
       // Merge Options
       newoptions = mergeOptions(options, newoption)
@@ -127,9 +127,9 @@ module.exports = function job (options) {
     return new Promise(async(resolve, reject) => {
       try {
         // check port number range
-        checkPortNumber(newoptions.connctionOption.port)
+        checkPortNumber(newoptions.connction.port)
         .then(async result => {
-          let queueObj = await createJobQueue(newoptions.connctionOption, newoptions.queueOption)
+          let queueObj = await createJobQueue(newoptions.connction, newoptions.queue)
           queueObj.on('error', (err) => {
             // err object is system error
             reject(customError(err))
@@ -145,7 +145,7 @@ module.exports = function job (options) {
           // this is return custom error
           reject(err)
         })
-        // let dbDriver = await createRethinkdbDash(options.connctionOption)
+        // let dbDriver = await createRethinkdbDash(options.connction)
       } catch (err) {
         // some system fatal error happend - no way to recover !!
         reject(customError(err))
@@ -157,9 +157,9 @@ module.exports = function job (options) {
     return new Promise(async(resolve, reject) => {
       try {
         // check port number range
-        checkPortNumber(newoptions.connctionOption.port)
+        checkPortNumber(newoptions.connction.port)
         .then(async result => {
-          let queueObj = await createJobQueue(newoptions.connctionOption, newoptions.queueOption)
+          let queueObj = await createJobQueue(newoptions.connction, newoptions.queue)
           queueObj.on('error', (err) => {
             // err object is system error
             reject(customError(err))
@@ -177,7 +177,7 @@ module.exports = function job (options) {
           // this is return custom error
           reject(err)
         })
-        // let dbDriver = await createRethinkdbDash(options.connctionOption)
+        // let dbDriver = await createRethinkdbDash(options.connction)
       } catch (err) {
         // some system fatal error happend - no way to recover !!
         reject(customError(err))
@@ -196,9 +196,9 @@ module.exports = function job (options) {
 
   let createJob = async function (queueObj, QData) {
     try {
-      delete QData.queueOption
-      delete QData.connctionOption
-      // delete QData.createJobOption
+      delete QData.queue
+      delete QData.connction
+      // delete QData.options
       let jobs = []
       if (QData.jobs !== undefined && Array.isArray(QData.jobs)) {
         for (let i = 0; i < QData.jobs.length; i++) {
@@ -219,13 +219,13 @@ module.exports = function job (options) {
     return new Promise(async (resolve, reject) => {
       // if any option pass as parameter it will create jobs
       let newCreateJoboption = {
-        createJobOption: jData.createJobOption
+        options: jData.options
       }
-      //console.log("===============",newCreateJoboption,"========",newoptions.createJobOption)
+      //console.log("===============",newCreateJoboption,"========",newoptions.options)
       // Merge Options
       try {
         newCreateJoboption = plugin.util.deepextend({
-          createJobOption: newoptions.createJobOption
+          options: newoptions.options
         }, newCreateJoboption)
       } catch (err) {}
       //console.log("=======new options========",newCreateJoboption)
@@ -233,34 +233,34 @@ module.exports = function job (options) {
       let qObj = await queueObj.createJob({data: jData})
       // set job queue priority options
 
-      if (newCreateJoboption.createJobOption.priority !== 'undefined'
-          && newCreateJoboption.createJobOption.priority !== ''
-          && priority.includes(newCreateJoboption.createJobOption.priority)) {
-        qObj.setPriority(newCreateJoboption.createJobOption.priority)
+      if (newCreateJoboption.options.priority !== 'undefined'
+          && newCreateJoboption.options.priority !== ''
+          && priority.includes(newCreateJoboption.options.priority)) {
+        qObj.setPriority(newCreateJoboption.options.priority)
       }
       // set job queue Timeout options
-      if (newCreateJoboption.createJobOption.timeout !== 'undefined' &&
-          newCreateJoboption.createJobOption.timeout !== '' &&
-          typeof (newCreateJoboption.createJobOption.timeout) === 'number') {
-        qObj.setTimeout(newCreateJoboption.createJobOption.timeout)
+      if (newCreateJoboption.options.timeout !== 'undefined' &&
+          newCreateJoboption.options.timeout !== '' &&
+          typeof (newCreateJoboption.options.timeout) === 'number') {
+        qObj.setTimeout(newCreateJoboption.options.timeout)
       }
       // set job queue RetryMax options
-      if (newCreateJoboption.createJobOption.retrymax !== 'undefined' &&
-        newCreateJoboption.createJobOption.retrymax !== '' &&
-        typeof (newCreateJoboption.createJobOption.retrymax) === 'number') {
-        qObj.setRetryMax(newCreateJoboption.createJobOption.retrymax)
+      if (newCreateJoboption.options.retrymax !== 'undefined' &&
+        newCreateJoboption.options.retrymax !== '' &&
+        typeof (newCreateJoboption.options.retrymax) === 'number') {
+        qObj.setRetryMax(newCreateJoboption.options.retrymax)
       }
       // set job queue RetryDelay options
-      if (newCreateJoboption.createJobOption.retrydelay !== 'undefined' &&
-          newCreateJoboption.createJobOption.retrydelay !== '' &&
-          typeof newCreateJoboption.createJobOption.retrydelay === 'number') {
-        qObj.setRetryDelay(newCreateJoboption.createJobOption.retrydelay)
+      if (newCreateJoboption.options.retrydelay !== 'undefined' &&
+          newCreateJoboption.options.retrydelay !== '' &&
+          typeof newCreateJoboption.options.retrydelay === 'number') {
+        qObj.setRetryDelay(newCreateJoboption.options.retrydelay)
       }
       // set job queue RetryDelay options
-      if (newCreateJoboption.createJobOption.name !== 'undefined' &&
-          newCreateJoboption.createJobOption.name !== '' &&
-          typeof newCreateJoboption.createJobOption.name === 'string') {
-        qObj.setName(newCreateJoboption.createJobOption.name)
+      if (newCreateJoboption.options.name !== 'undefined' &&
+          newCreateJoboption.options.name !== '' &&
+          typeof newCreateJoboption.options.name === 'string') {
+        qObj.setName(newCreateJoboption.options.name)
       }
       resolve(qObj)
     })
