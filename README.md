@@ -16,28 +16,35 @@ To install, simply use npm. Remember you will need to install [Seneca.js][] if y
 npm install seneca-rethink-jobqueue
 ```
 
-## Usage in the same process
+### Usage of seneca rethink job queue
+```
+let rjob = require('seneca-rethink-jobqueue')
 
-```js
-let senecaObj = require('seneca')()
-
-// Queue options have defaults and are not required
-const queueOption1 = {
-  name: 'RegistrationEmail', // The queue and table name
-  masterInterval: 310000, // Database review period in milliseconds
-  changeFeed: true, // Enables events from the database table
-  concurrency: 100,
-  removeFinishedJobs: 2592000000 // true, false, or number of milliseconds
-}
+// for create rethinkdb job create
 
 let bodyData = {
-	"to":"abcd@yourdomain.com",
-	"from":"info@yourdomain.com",
+	"to":"abcd@vmail.officebrain.com",
+	"from":"info@vmail.officebrain.com",
 	"subject":"Register successfully",
 	"body": "you are registered successfully on our site"
 }
 
-senecaObj.use('job').act('role:job,cmd:create',bodyData, console.log)
+rjob.createJob(bodyData)
+.then(result => console.log(result))
+.catch(err => console.log(err))
+
+
+// for find job data
+
+let findData = {
+	"findVal": {
+		"data": {"subject":"Register successfully"}
+	}
+}
+
+rjob.findJob(findData)
+.then(result => console.log(result))
+.catch(err => console.log(err))
 
 ```
 
@@ -108,12 +115,12 @@ post data like as below
 
 ```
 {
-  "connctionOption" : {
+  "connction" : {
     "host": "localhost",
     "port": 28015,
     "db": "jobqueue"
   },
-  "queueOption" : {
+  "queue" : {
     "name": "registartion"
   },
 	"to":"abcd@yourdomain.com",
