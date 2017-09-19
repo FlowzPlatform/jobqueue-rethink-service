@@ -36,7 +36,7 @@ var Routes = [
     prefix: urlPrefix,
     pin: pluginFind,
     map: {
-      findjob: {GET: false, POST: true}
+      find: {GET: false, POST: true}
     }
   }
 ]

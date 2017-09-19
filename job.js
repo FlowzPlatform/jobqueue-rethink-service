@@ -79,6 +79,9 @@ module.exports = function job (options) {
       await createRethinkJobQueue(msg)
         .then(result => {
           result.connctionInfo = rethinkDBInfo
+
+          // console.log(response) role:subscription,cmd:created
+          //subscribeTo(plugin,)
           response(null, result)
         })
         .catch(err => {
@@ -273,8 +276,8 @@ module.exports = function job (options) {
         //console.log("=====add jobs======",job)
         await queueObj.addJob(job)
                       .then(result => {
-                        result = {jobId: result.map(function (a) { return a.id })}
-                        //console.log("=========================",result)
+                        // console.log('=========================', result)
+                        result = {job: result.map(function (a) { delete a.q; return a })}
                         resolve(result)
                       })
                       .catch(err => {
