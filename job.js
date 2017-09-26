@@ -1,6 +1,7 @@
 const Queue = require('rethinkdb-job-queue')
 const config = require('config')
 
+let pluginSubscriptionCreate = 'role:subscription,cmd:created'
 let pluginCreate = 'role:job,cmd:create'
 let pluginFind = 'role:job,cmd:findjob'
 if (config.has('pluginOptions.pin')) {
@@ -9,13 +10,15 @@ if (config.has('pluginOptions.pin')) {
 
 let dbConfig = config.get('defaultConnection')
 let qConfig = config.get('defaultQueue')
+let subsConfig = config.get('defaultSubscription')
 
 const qCreateOption = config.get('defaultCreateJob')
 
 const defaultOption = {
   connction: dbConfig,
   queue: qConfig,
-  options: qCreateOption
+  options: qCreateOption,
+  subscription: subsConfig
 }
 // console.log(defaultConnectionOptions, defaultQueueOption, defaultCreateJobOption)
 module.exports = function job (options) {
@@ -27,7 +30,8 @@ module.exports = function job (options) {
       return plugin.util.deepextend({
         queue: fOptions.queue,
         connction: fOptions.connction,
-        options: fOptions.options
+        options: fOptions.options,
+        subscription: fOptions.subscription
       }, mOption)
     } catch (err) {
       return fOptions
@@ -35,25 +39,29 @@ module.exports = function job (options) {
   }
 
   options = mergeOptions(defaultOption, options)
-
+  // console.log('======after merge========', options)
   let validateRequestBody = function (msg) {
-    var contype = msg.request$.headers['content-type']
-    if (!contype || contype.indexOf('application/json') !== 0) {
-      let err = {error: {message: gErrMessages['ERR_CONTENT_TYPE'], code: 'ERR_CONTENT_TYPE'}}
-      return [err, null]
-    }
+    if (msg.request$ !== undefined) {
+      var contype = msg.request$.headers['content-type']
+      if (!contype || contype.indexOf('application/json') !== 0) {
+        let err = {error: {message: gErrMessages['ERR_CONTENT_TYPE'], code: 'ERR_CONTENT_TYPE'}}
+        return [err, null]
+      }
 
-    if (msg.args !== undefined && msg.args.body !== undefined && msg.args.body !== '') {
-      try {
-        let paserBody = JSON.parse(msg.args.body)
-        return [null, paserBody]
-      } catch (err) {
-        let err1 = {error: {message: gErrMessages['ERR_INVALID_PRAMATER'], code: 'ERR_INVALID_PRAMATER'}}
-        return [err1, null]
+      if (msg.args !== undefined && msg.args.body !== undefined && msg.args.body !== '') {
+        try {
+          let paserBody = JSON.parse(msg.args.body)
+          return [null, paserBody]
+        } catch (err) {
+          let err1 = {error: {message: gErrMessages['ERR_INVALID_PRAMATER'], code: 'ERR_INVALID_PRAMATER'}}
+          return [err1, null]
+        }
+      } else {
+        let err = {error: {message: gErrMessages['ERR_PRAMATER_MISSING'], code: 'ERR_INVALID_PORT'}}
+        return [err, null]
       }
     } else {
-      let err = {error: {message: gErrMessages['ERR_PRAMATER_MISSING'], code: 'ERR_INVALID_PORT'}}
-      return [err, null]
+      return [null, msg]
     }
   }
 
@@ -75,13 +83,15 @@ module.exports = function job (options) {
       }
       // Merge Options
       newoptions = mergeOptions(options, newoption)
-
+      console.log("=====================job Options=======",newoptions)
       await createRethinkJobQueue(msg)
         .then(result => {
+          // add to subscription queue when its enable
+          if (options.subscription.enable === true) {
+            jData = Object.assign({}, result, rethinkDBInfo)
+            addToScubscriptionQueue(plugin, jData)
+          }
           result.connctionInfo = rethinkDBInfo
-
-          // console.log(response) role:subscription,cmd:created
-          //subscribeTo(plugin,)
           response(null, result)
         })
         .catch(err => {
@@ -92,6 +102,16 @@ module.exports = function job (options) {
       response(err)
     }
   })
+
+  let addToScubscriptionQueue = function (plugin, JobData) {
+    plugin.use('subscription').act(pluginSubscriptionCreate, JobData, function (err, Result) {
+      if (err) {
+        return false
+      } else {
+        return true
+      }
+    })
+  }
 
   this.add(pluginFind, async function (msg, response) {
     try {
@@ -190,7 +210,7 @@ module.exports = function job (options) {
 
   let createJobQueue = function (dbDriver, queueOption) {
     try {
-      rethinkDBInfo = {'jobHost': dbDriver.host + ':' + dbDriver.port, 'jobDB': dbDriver.db, 'jobType': queueOption.name}
+      rethinkDBInfo = {'jobHost': dbDriver.host, 'port': dbDriver.port, 'jobDB': dbDriver.db, 'jobType': queueOption.name}
       return new Queue(dbDriver, queueOption)
     } catch (err) {
       return (err)

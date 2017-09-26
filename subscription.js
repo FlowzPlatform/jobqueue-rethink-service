@@ -1,71 +1,68 @@
 const Queue = require('rethinkdb-job-queue')
 const config = require('config')
 
-let pluginCreate = 'role:subscription,cmd:created'
+let pluginSubscriptionCreate = 'role:subscription,cmd:created'
 
 let dbConfig = config.get('defaultConnection')
 let qConfig = config.get('defaultQueue')
+let subsConfig = config.get('defaultSubscription')
 
 const qCreateOption = config.get('defaultCreateJob')
 
 const defaultOption = {
   connction: dbConfig,
   queue: qConfig,
-  options: qCreateOption
+  options: qCreateOption,
+  subscription: subsConfig
 }
 // console.log(defaultConnectionOptions, defaultQueueOption, defaultCreateJobOption)
 module.exports = function job (options) {
-  let rethinkDBInfo, newoptions
   let plugin = this
 
-  let validateRequestBody = function (msg) {
-    var contype = msg.request$.headers['content-type']
-    if (!contype || contype.indexOf('application/json') !== 0) {
-      let err = {error: {message: gErrMessages['ERR_CONTENT_TYPE'], code: 'ERR_CONTENT_TYPE'}}
-      return [err, null]
-    }
-
-    if (msg.args !== undefined && msg.args.body !== undefined && msg.args.body !== '') {
-      try {
-        let paserBody = JSON.parse(msg.args.body)
-        return [null, paserBody]
-      } catch (err) {
-        let err1 = {error: {message: gErrMessages['ERR_INVALID_PRAMATER'], code: 'ERR_INVALID_PRAMATER'}}
-        return [err1, null]
-      }
-    } else {
-      let err = {error: {message: gErrMessages['ERR_PRAMATER_MISSING'], code: 'ERR_INVALID_PORT'}}
-      return [err, null]
-    }
-  }
-
-  this.add(pluginCreate, async function (msg, response) {
+  this.add(pluginSubscriptionCreate, async function (msg, response) {
     try {
-      // validate parameter
-      let validParamErr
-      [validParamErr, msg] = validateRequestBody(msg)
-      if (validParamErr) {
-        response(validParamErr)
-        return false
-      }
-      createSubscriptionQueue(msg)
+      createSubscriptionQueue(plugin, msg)
+      let result = {'msg': 'add to subscription queue'}
+      response(null, result)
     } catch (err) {
       response(err)
     }
   })
-
   // create
-  let createSubscriptionQueue = function (senecaObj, data) {
+  let createSubscriptionQueue = function (plugin, jobData) {
     return new Promise((resolve, reject) => {
-      let jobData = data
-      jobData.connction = defaultOption.connction
-      jobData.queue = defaultOption.queue
-      jobData.options = defaultOption.options
-      jobData.queue.name = 'subscription'
-      senecaObj.use('job').act('role:job,cmd:create', jobData, function () {
+      let newOptions1 = {
+        connction : defaultOption.connction,
+        queue : defaultOption.queue,
+        options : defaultOption.options,
+        subscription : defaultOption.subscription
+      } //
 
+      let sOptions = {
+        "queue" : {
+          "name": "subscription",
+
+        },
+        "option" : {
+          "priority": "normal",
+
+        },
+        "subscription": {
+          "enable": false
+        }
+      }
+
+      newOptions1 = plugin.util.deepextend({
+        queue: sOptions.queue,
+        subscription: sOptions.subscription
+      }, newOptions1)
+      let senecaObj = require('seneca')()
+      senecaObj.use('job',sOptions).act('role:job,cmd:create', jobData, function (err,result) {
+        if(!err) {
+          console.log('======subscription job created===')
+        }
       })
+      resolve("done")
     })
   }
-
 }

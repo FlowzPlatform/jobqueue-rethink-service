@@ -19,5 +19,8 @@
   "web-option": {
     "port": 5000,
     "urlPrefix": "/job"
+  },
+  "defaultSubscription": {
+    "enable": true
   }
 }
