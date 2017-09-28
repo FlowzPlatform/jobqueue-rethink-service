@@ -22,5 +22,10 @@
   },
   "defaultSubscription": {
     "enable": true
+  },
+  "defaultKafkaProducer": {
+    "debug" : "all",
+    "metadata.broker.list": "localhost:9092",
+    "dr_cb": true
   }
 }
