@@ -11,13 +11,14 @@
     "seneca-plugin"
   ],
   "author": "",
-
   "license": "ISC",
   "dependencies": {
     "config": "^1.26.2",
     "cors": "^2.8.4",
     "express": "^4.15.3",
     "nodemailer": "^4.0.1",
+    "request": "^2.83.0",
+    "request-promise": "^4.2.2",
     "rethinkdb-job-queue": "^3.1.3",
     "seneca": "~3.3.0",
     "seneca-balance-client": "^0.6.1",

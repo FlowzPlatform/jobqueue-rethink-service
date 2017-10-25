@@ -30,6 +30,22 @@ let findJob = function (bodyData) {
   })
 }
 
+let pluginQueue = 'role:job,cmd:queue'
+
+let getJobQueue = function (options) {
+  return new Promise((resolve, reject) => {
+    senecaObj.use('job').act(pluginQueue, options, (err, result) => {
+      if (err) {
+        reject(err)
+      } else {
+        resolve(result)
+      }
+    })
+  })
+}
+
 module.exports.createJob = createJob
 
 module.exports.findJob = findJob
+
+module.exports.getJobQueue = getJobQueue

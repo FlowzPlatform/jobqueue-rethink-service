@@ -4,6 +4,7 @@ const config = require('config')
 let pluginSubscriptionCreate = 'role:subscription,cmd:created'
 let pluginCreate = 'role:job,cmd:create'
 let pluginFind = 'role:job,cmd:findjob'
+let pluginQueue = 'role:job,cmd:queue'
 if (config.has('pluginOptions.pin')) {
   pluginCreate = config.get('pluginOptions.pin')
 }
@@ -83,7 +84,7 @@ module.exports = function job (options) {
       }
       // Merge Options
       newoptions = mergeOptions(options, newoption)
-      console.log("=====================job Options=======",newoptions)
+      //console.log("=====================job Options=======",newoptions)
       await createRethinkJobQueue(msg)
         .then(result => {
           // add to subscription queue when its enable
@@ -104,14 +105,43 @@ module.exports = function job (options) {
   })
 
   let addToScubscriptionQueue = function (plugin, JobData) {
-    plugin.use('subscription').act(pluginSubscriptionCreate, JobData, function (err, Result) {
-      if (err) {
-        return false
-      } else {
-        return true
-      }
-    })
+    // plugin.use('subscription').act(pluginSubscriptionCreate, JobData, function (err, Result) {
+    //   if (err) {
+    //     return false
+    //   } else {
+    //     return true
+    //   }
+    // })
   }
+
+  this.add(pluginQueue, async function (msg, response) {
+    try {
+      // validate parameter
+      let validParamErr
+      [validParamErr, msg] = validateRequestBody(msg)
+      if (validParamErr) {
+        response(validParamErr)
+        return false
+      }
+      // if any option pass as parameter it will create jobs
+      let newoption = {
+        queue: msg.queue,
+        connction: msg.connction,
+        options: msg.options
+      }
+      // Merge Options
+      newoptions = mergeOptions(options, newoption)
+      // console.log("===========queue=obj==================")
+      let queueObj = await createJobQueue(newoptions.connction, newoptions.queue)
+      queueObj.on('error', (err) => {
+        // err object is system error
+        response(customError(err))
+      })
+      response({q:queueObj})
+    } catch (err) {
+      response(err)
+    }
+  })
 
   this.add(pluginFind, async function (msg, response) {
     try {
@@ -207,6 +237,7 @@ module.exports = function job (options) {
       }
     })
   }
+
 
   let createJobQueue = function (dbDriver, queueOption) {
     try {

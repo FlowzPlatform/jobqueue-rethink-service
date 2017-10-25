@@ -8,7 +8,8 @@
     "db": "jobQueue"
   },
   "defaultQueue" : {
-    "name": "RegistrationEmail"
+    "name": "RegistrationEmail",
+    "concurrency": 5
   },
   "defaultCreateJob" : {
     "priority": "normal",
@@ -27,5 +28,8 @@
     "debug" : "all",
     "metadata.broker.list": "localhost:9092",
     "dr_cb": true
+  },
+  "defaultWorker": {
+    "table" : "workers"
   }
 }
