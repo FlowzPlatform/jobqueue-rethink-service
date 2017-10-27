@@ -1,10 +1,8 @@
 let rJob = require('./index')
 
 process.on('message', (m) => {
-  console.log('CHILD got message:', m);
-});
-
-process.send({ foo: 'bar' });
+  console.log('CHILD got message:', m)
+})
 
 'use strict'
 const vm = require('vm')
@@ -27,20 +25,19 @@ function getJobTypeWorkerProcess (jobType) {
 
 let runWorker = function (options) {
   console.log("================Worker Start=====", options)
-  rJob.getJobQueue({
-      "connction" : {
-          "host": "localhost",
-          "port": 28015
-          },
-        "queue" : {
-        "name": options.name
-      }}).then(async result => {
+  rJob.getJobQueue(options).then(async result => {
     try {
+      console.log('=======job queue object created =', options.queue.name, '========')
       let qObj = result.q
-      qObj.process((job, next) => {
-        JobExecute('job', 'next')
-        console.log('=======worker name=', options.name, '========')
-        return next(null, 'Job Process')
+      qObj.process(async (job, next) => {
+        try {
+          JobExecute(job)
+            .then(result => { next(null, result) })
+            .catch(err => { next(err) })
+          console.log('=======worker name=', options.queue.name, '========')
+        } catch (err) {
+          return next(err)
+        }
       })
 
       qObj.on('idle', (queueId) => {
@@ -62,10 +59,16 @@ let executeWorker = async function (jobType, options) {
   try {
     let jobProcessCode = await getJobTypeWorkerProcess(jobType) // `function (job,next){console.log("dynamic job process load")};`
     const script = new vm.Script(`
-      JobExecute = ` + jobProcessCode,
+      (function(require) {
+        JobExecute = function(job) {
+          return new Promise(
+            async (resolve, reject) => ` + jobProcessCode + `
+          )
+        }
+      })`,
       { filename: 'jobProcessTrace.vm' })
-    script.runInThisContext()
-    runWorker({'name': jobType})
+    script.runInThisContext()(require)
+    runWorker(options)
     console.log('Child Process as Worker Executed')
   } catch (e) {
     console.log(e)
@@ -73,4 +76,5 @@ let executeWorker = async function (jobType, options) {
   }
 }
 
-executeWorker(process.argv[2], {})
+let jobOptions = JSON.parse(process.argv[3])
+executeWorker(process.argv[2], jobOptions)
