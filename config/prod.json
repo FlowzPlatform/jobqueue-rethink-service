@@ -3,12 +3,13 @@
     "pin": "role:job,cmd:create"
   },
   "defaultConnection" : {
-    "host": "rjobDB",
+    "host": "localhost",
     "port": 28015,
     "db": "jobQueue"
   },
   "defaultQueue" : {
-    "name": "RegistrationEmail"
+    "name": "RegistrationEmail",
+    "concurrency": 5
   },
   "defaultCreateJob" : {
     "priority": "normal",
@@ -19,5 +20,18 @@
   "web-option": {
     "port": 5000,
     "urlPrefix": "/job"
+  },
+  "defaultSubscription": {
+    "enable": true
+  },
+  "registerWorker": {
+    "table": "registerWorkers",
+    "port": 3000,
+    "get-job-module-api-url": "http://localhost:3000/job-module/"
+  },
+  "symmetricWorker": {
+    "port" : 9001,
+    "table" : "symmetricWorkers",
+    "execute-worker-url": "http://localhost:9001/execute-worker"
   }
 }
