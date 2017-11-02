@@ -27,11 +27,12 @@
   "registerWorker": {
     "table": "registerWorkers",
     "port": 3000,
-    "get-job-module-api-url": "http://localhost:3000/job-module/"
+    "getJobModuleApiURL": "http://localhost:3000/job-module/"
   },
   "symmetricWorker": {
     "port" : 9001,
     "table" : "symmetricWorkers",
-    "execute-worker-url": "http://localhost:9001/execute-worker"
+    "executeWorkerURL": "http://localhost:9001/execute-worker",
+    "childProcessFile": "start-child-worker.js"
   }
 }

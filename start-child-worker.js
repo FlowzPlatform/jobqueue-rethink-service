@@ -1,11 +1,12 @@
+'use strict'
 let rJob = require('./index')
+const config = require('config')
 let registerWorker = config.get('registerWorker')
 
 process.on('message', (m) => {
   console.log('CHILD got message:', m)
 })
 
-'use strict'
 const vm = require('vm')
 var rp = require('request-promise')
 
@@ -14,7 +15,7 @@ global.JobExecute
 
 function getJobTypeWorkerProcess (jobType) {
   return new Promise((resolve, reject) => {
-    rp(registerWorker + jobType)
+    rp(registerWorker.getJobModuleApiURL + jobType)
       .then(function (jobProcessCode) {
         resolve(jobProcessCode)
       })

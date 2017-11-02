@@ -1,5 +1,5 @@
 const express = require('express')
-const fileUpload = require('express-fileupload')
+// const fileUpload = require('express-fileupload')
 let rethink = require('rethinkdb')
 const config = require('config')
 const _ = require('underscore')
@@ -13,7 +13,7 @@ connectRethinkDB(defaultConnection).then(result => {
 const app = express()
 
 // default options
-app.use(fileUpload())
+//app.use(fileUpload())
 
 app.get('/download/:jobtype', async function (req, res) {
   let result = await getDataJobType(registerWorker.table, rdbConn, req.params.jobtype)
@@ -62,7 +62,7 @@ app.post('/upload', async function (req, res) {
 
   saveToRethinkDB(registerWorker.table, rdbConn, workerData)
   .then(result => {
-    res.send('File uploaded!')
+    res.send('Worker Process registered!')
   })
   .catch(err => {
     return res.status(500).send(err)
@@ -92,7 +92,7 @@ app.post('/upload-worker-process', async function (req, res) {
 
   saveToRethinkDB(registerWorker.table, rdbConn, workerData)
   .then(result => {
-    res.send('File uploaded!')
+    res.send('Worker Process registered!')
   })
   .catch(err => {
     return res.status(500).send(err)

@@ -1,11 +1,12 @@
 // with ES6 import
+const config = require('config')
 const cp = require('child_process');
 let symmetricWorker = config.get('symmetricWorker')
 
 let executeChildProcessAsWorker = function (jobType, options) {
   try {
     let strOptions = JSON.stringify(options)
-    let n = cp.fork(`${__dirname}/start-child-worker.js`, [jobType, strOptions])
+    let n = cp.fork(`${__dirname}/${symmetricWorker.childProcessFile}`, [jobType, strOptions])
     n.on('message', (m) => {
       console.log('PARENT got message:', m)
     })
@@ -14,7 +15,7 @@ let executeChildProcessAsWorker = function (jobType, options) {
   }
 }
 
-var socket = require('socket.io-client')(symmetricWorker.execute-worker-url, {reconnect: true})
+var socket = require('socket.io-client')(symmetricWorker.executeWorkerURL, {reconnect: true})
 
 socket.on('connect', function () {})
 socket.on('worker', function (data) {
