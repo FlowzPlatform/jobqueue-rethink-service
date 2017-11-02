@@ -21,8 +21,8 @@ senecaObj.use('job').act('role:job,cmd:create',bodyData, console.log)
 // // Connection options have defaults and are not required
 // // You can replace these options with a rethinkdbdash driver object
 // const connctionOption1 = {
-//   host: '139.59.35.45',
-//   port: 28016,
+//   host: 'localhost',
+//   port: 28015,
 //   db: 'jobQueue' // The name of the database in RethinkDB
 // }
 // senecaObj.use('job',{queueOption:queueOption1, connctionOption: connctionOption1}).act('role:job,cmd:create,to:abc@vmail.com,from:pqr1@vmail.com', console.log)
