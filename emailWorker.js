@@ -6,8 +6,8 @@ let jobprocess = function (job, next) {
     port: 465,
     secure: true,
     auth: {
-      user: 'obsoftcare@gmail.com',
-      pass: 'Welcome123@'
+      user: 'test@gmail.com',
+      pass: 'test11111'
     }
   })
 
@@ -30,8 +30,8 @@ let jobprocess = function (job, next) {
 }
 
 jobprocess({data:{
-			"to":"chirag@officebrain.com",
-			"from":"info@yourdomain.com",
+			"to":"ewewew@yourdomain.com",
+			"from":"sas@yourdomain.com",
 			"subject":"this is test mail",
 			"body":"this is message body"
 		}},{})

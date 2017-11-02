@@ -19,7 +19,7 @@ server.listen(symmetricWorker.port)
 // register job type queue object
 let registeredJobTypeQueueObj = {}
 
-app.get('/register-jobtype/:jobtype', async function (req, res) {
+app.put('/register-jobtype/:jobtype', async function (req, res) {
   try {
     let newConnection = _.extend({'connection':defaultConnection},{
         'queue': {'name': req.params.jobtype}
@@ -34,7 +34,7 @@ app.get('/register-jobtype/:jobtype', async function (req, res) {
   }
 })
 
-app.get('/unregister-jobtype/:jobtype', async function (req, res) {
+app.delete('/register-jobtype/:jobtype', async function (req, res) {
   try {
     //console.log(registeredJobTypeQueueObj[req.params.jobtype])
     if (registeredJobTypeQueueObj[req.params.jobtype] !== undefined) {
@@ -54,9 +54,9 @@ app.get('/unregister-jobtype/:jobtype', async function (req, res) {
 
 app.post('/register-jobtype/:jobtype', async function (req, res) {
   try {
-    let newConnection = plugin.util.deepextend({
-      connction: req.body.connection,
-      }, defaultConnection)
+      let newConnection = _.extend({'connection':defaultConnection},{
+        connction: req.body.connection,
+        })
     console.log('================newOptions====',newConnection)
     generateQueueObjectByJobTypeWithSaveToDB(req.param.jobtype, newConnection)
     .then(result => { console.log("register response==",result); res.send(result) })
