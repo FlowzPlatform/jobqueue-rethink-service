@@ -4,11 +4,11 @@ let rethink = require('rethinkdb')
 const config = require('config')
 const _ = require('underscore')
 let defaultConnection = config.get('defaultConnection')
-let defaultWorker = config.get('defaultWorker')
+let registerWorker = config.get('registerWorker')
 let rdbConn
 connectRethinkDB(defaultConnection).then(result => {
   rdbConn = result
-  checkTableExistsOrNot(rdbConn, defaultWorker.table).then(res => console.log(res))
+  checkTableExistsOrNot(rdbConn, registerWorker.table).then(res => console.log(res))
 })
 const app = express()
 
@@ -16,7 +16,7 @@ const app = express()
 app.use(fileUpload())
 
 app.get('/download/:jobtype', async function (req, res) {
-  let result = await getDataJobType(defaultWorker.table, rdbConn, req.params.jobtype)
+  let result = await getDataJobType(registerWorker.table, rdbConn, req.params.jobtype)
   if (result.id === undefined) {
     return res.status(400).send('No worker registered.')
   }
@@ -31,7 +31,7 @@ app.get('/download/:jobtype', async function (req, res) {
 })
 
 app.get('/job-module/:jobtype', async function (req, res) {
-  let result = await getDataJobType(defaultWorker.table, rdbConn, req.params.jobtype)
+  let result = await getDataJobType(registerWorker.table, rdbConn, req.params.jobtype)
   if (result.id === undefined) {
     return res.status(400).send('No worker registered.')
   }
@@ -60,7 +60,7 @@ app.post('/upload', async function (req, res) {
     }
   }
 
-  saveToRethinkDB(defaultWorker.table, rdbConn, workerData)
+  saveToRethinkDB(registerWorker.table, rdbConn, workerData)
   .then(result => {
     res.send('File uploaded!')
   })
@@ -90,7 +90,7 @@ app.post('/upload-worker-process', async function (req, res) {
     jobProcess: req.body.jobprocess
   }
 
-  saveToRethinkDB(defaultWorker.table, rdbConn, workerData)
+  saveToRethinkDB(registerWorker.table, rdbConn, workerData)
   .then(result => {
     res.send('File uploaded!')
   })
@@ -99,7 +99,7 @@ app.post('/upload-worker-process', async function (req, res) {
   })
 })
 
-app.listen(3000)
+app.listen(registerWorker.port)
 
 function saveToRethinkDB (table, connection, data) {
   return new Promise(async(resolve, reject) => {

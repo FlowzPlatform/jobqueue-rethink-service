@@ -24,12 +24,14 @@
   "defaultSubscription": {
     "enable": true
   },
-  "defaultKafkaProducer": {
-    "debug" : "all",
-    "metadata.broker.list": "localhost:9092",
-    "dr_cb": true
+  "registerWorker": {
+    "table": "registerWorkers",
+    "port": 3000,
+    "get-job-module-api-url": "http://localhost:3000/job-module/"
   },
-  "defaultWorker": {
-    "table" : "workers"
+  "symmetricWorker": {
+    "port" : 9001,
+    "table" : "symmetricWorkers",
+    "execute-worker-url": "http://localhost:9001/execute-worker"
   }
 }
