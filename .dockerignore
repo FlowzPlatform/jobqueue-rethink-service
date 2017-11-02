@@ -1,2 +1,4 @@
 node_modules
 rethinkdb_data
+doc/
+log_file

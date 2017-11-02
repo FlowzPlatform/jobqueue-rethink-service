@@ -1,36 +1,51 @@
-let senecaObj = require('seneca')
-//let SenecaClient = senecaObj.client()
+let senecaObj = require('seneca')()
+const webconfig = require('config')
+let pluginPin = 'role:job,cmd:create'
+if (webconfig.has('pluginOptions.pin')) {
+  pluginPin = webconfig.get('pluginOptions.pin')
+}
+let pluginFind = 'role:job,cmd:findjob'
 
-// SenecaClient.act({role: 'email', cmd: 'send'}, function (args, result) {
-//   console.log(result)
-// })
+let createJob = function (bodyData) {
+  return new Promise((resolve, reject) => {
+    senecaObj.use('job').act(pluginPin, bodyData, (err, result) => {
+      if (err) {
+        reject(err)
+      } else {
+        resolve(result)
+      }
+    })
+  })
+}
 
-//senecaObj.use('job').act('role:job,cmd:create,to:abc@vmail.com,from:pqr1@vmail.com', console.log)
+let findJob = function (bodyData) {
+  return new Promise((resolve, reject) => {
+    senecaObj.use('job').act(pluginFind, bodyData, (err, result) => {
+      if (err) {
+        reject(err)
+      } else {
+        resolve(result)
+      }
+    })
+  })
+}
 
-//senecaObj.use('mesh').act('role:job,cmd:create',{to:'abc@vmail.com',from:'pqr1@vmail.com'}, console.log)
+let pluginQueue = 'role:job,cmd:queue'
 
-senecaObj()
-	.use('mesh',{timeout: 999999})
-	.act({role: 'job', cmd: 'create'}, {to:'abc@vmail.com',from:'pqr1@vmail.com'}, (err, done) => {
-	if (err) { throw err; }
-	console.log('test-mesh done.', done)
-})
+let getJobQueue = function (options) {
+  return new Promise((resolve, reject) => {
+    senecaObj.use('job').act(pluginQueue, options, (err, result) => {
+      if (err) {
+        reject(err)
+      } else {
+        resolve(result)
+      }
+    })
+  })
+}
 
-// // Queue options have defaults and are not required
-// const queueOption1 = {
-//   name: 'RegistrationEmail', // The queue and table name
-//   masterInterval: 310000, // Database review period in milliseconds
-//   changeFeed: true, // Enables events from the database table
-//   concurrency: 100,
-//   removeFinishedJobs: 2592000000, // true, false, or number of milliseconds
-// }
+module.exports.createJob = createJob
 
-// // Connection options have defaults and are not required
-// // You can replace these options with a rethinkdbdash driver object
-// const connctionOption1 = {
-//   host: '139.59.35.45',
-//   port: 28016,
-//   db: 'jobQueue' // The name of the database in RethinkDB
-// }
+module.exports.findJob = findJob
 
-//senecaObj.use('job',{queueOption:queueOption1}).act('role:job,cmd:create,to:abc@vmail.com,from:pqr1@vmail.com', console.log)
+module.exports.getJobQueue = getJobQueue
