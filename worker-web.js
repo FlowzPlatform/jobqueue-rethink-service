@@ -1,5 +1,5 @@
 const express = require('express')
-// const fileUpload = require('express-fileupload')
+const fileUpload = require('express-fileupload')
 let rethink = require('rethinkdb')
 const config = require('config')
 const _ = require('underscore')
@@ -13,7 +13,7 @@ connectRethinkDB(defaultConnection).then(result => {
 const app = express()
 
 // default options
-//app.use(fileUpload())
+app.use(fileUpload())
 
 app.get('/download/:jobtype', async function (req, res) {
   let result = await getDataJobType(registerWorker.table, rdbConn, req.params.jobtype)
@@ -85,6 +85,7 @@ app.post('/upload-worker-process', async function (req, res) {
   // The name of the input field (i.e. "sampleFile") is used to retrieve the uploaded file
   // let sampleFile = req.files.sampleFile
   // console.log(req.files.sampleFile, req.body)
+  console.log(req.fields)
   let workerData = {
     jobType: req.body.jobtype,
     jobProcess: req.body.jobprocess

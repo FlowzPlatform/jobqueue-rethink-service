@@ -154,36 +154,36 @@ post parameter
 ```
 jobtype = RegistrationEmail
 jobprocess =  {
-							  const nodemailer = require('nodemailer')
-							  let transporter = nodemailer.createTransport({
-							    service: 'SMTP',
-							    host: 'smtp.gmail.com',
-							    port: 465,
-							    secure: true,
-							    auth: {
-							      user: 'your@gmail.com',
-							      pass: 'your-password'
-							    }
-							  })
+	  const nodemailer = require('nodemailer')
+	  let transporter = nodemailer.createTransport({
+	    service: 'SMTP',
+	    host: 'smtp.gmail.com',
+	    port: 465,
+	    secure: true,
+	    auth: {
+	      user: 'your@gmail.com',
+	      pass: 'your-password'
+	    }
+	  })
 
-							  // setup email data with unicode symbols
-							  let mailOptions = {
-							    from: job.data.from, // sender address
-							    to: job.data.to, // list of receivers
-							    cc: job.data.cc, // list of receivers
-							    subject: job.data.subject, // Subject line
-							    text: job.data.body, // plain text body
-							    html: job.data.body // html body
-							  }
-							  // send mail with defined transport object
-							  transporter.sendMail(mailOptions, (error, info) => {
-							    console.log(info)
-							    if (error) {
-							      reject(error)
-							    }
-							    resolve('Message ' +info.messageId +' sent: '+ info.response)
-							  })
-							}
+	  // setup email data with unicode symbols
+	  let mailOptions = {
+	    from: job.data.from, // sender address
+	    to: job.data.to, // list of receivers
+	    cc: job.data.cc, // list of receivers
+	    subject: job.data.subject, // Subject line
+	    text: job.data.body, // plain text body
+	    html: job.data.body // html body
+	  }
+	  // send mail with defined transport object
+	  transporter.sendMail(mailOptions, (error, info) => {
+	    console.log(info)
+	    if (error) {
+	      reject(error)
+	    }
+	    resolve('Message ' +info.messageId +' sent: '+ info.response)
+	  })
+	}
 ```
 ##### Note : In job process code you have to set resolve and reject as response for next job process in job queue
 
