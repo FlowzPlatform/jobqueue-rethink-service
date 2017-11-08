@@ -1,16 +1,18 @@
-const express = require('express')
 const fileUpload = require('express-fileupload')
 let rethink = require('rethinkdb')
 const config = require('config')
 const _ = require('underscore')
-let defaultConnection = config.get('defaultConnection')
-let registerWorker = config.get('registerWorker')
-let rdbConn
+const defaultConnection = config.get('defaultConnection')
+const registerWorker = config.get('registerWorker')
+const pino = require('pino')
+const PINO = config.get('pino')
+const app = require('express')()
+var rdbConn
+
 connectRethinkDB(defaultConnection).then(result => {
   rdbConn = result
-  checkTableExistsOrNot(rdbConn, registerWorker.table).then(res => console.log(res))
+  checkTableExistsOrNot(rdbConn, registerWorker.table).then(res => pino(PINO).info(res))
 })
-const app = express()
 
 // default options
 app.use(fileUpload())
@@ -85,7 +87,6 @@ app.post('/upload-worker-process', async function (req, res) {
   // The name of the input field (i.e. "sampleFile") is used to retrieve the uploaded file
   // let sampleFile = req.files.sampleFile
   // console.log(req.files.sampleFile, req.body)
-  console.log(req.fields)
   let workerData = {
     jobType: req.body.jobtype,
     jobProcess: req.body.jobprocess
@@ -116,7 +117,7 @@ function saveToRethinkDB (table, connection, data) {
       if (err) {
         reject(err)
       } else {
-        console.log('data inserted')
+        pino(PINO).info('data inserted')
         resolve(result)
       }
     })

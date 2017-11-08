@@ -1,37 +1,35 @@
 'use strict'
 
-const Seneca = require('seneca')
-const Express = require('express')
-// const bodyParser = require('body-parser')
+const seneca = require('seneca')({log: 'silent'})
+var app = require('express')()
 const Web = require('seneca-web')
 const cors = require('cors')
-
 const webconfig = require('config')
-let pluginPin = 'role:job,cmd:create'
-if (webconfig.has('pluginOptions.pin')) {
-  pluginPin = webconfig.get('pluginOptions.pin')
-}
+const pino = require('pino')
 
-let pluginFind = 'role:job,cmd:findjob'
-
-let webPort = 4545
-if (webconfig.has('web-option.port')) {
-  webPort = webconfig.get('web-option.port')
-}
-
-let urlPrefix = '/job'
-if (webconfig.has('web-option.urlPrefix')) {
-  urlPrefix = webconfig.get('web-option.urlPrefix')
-}
+const pluginCreate = webconfig.get('plugins.createPattern')
+const pluginFind = webconfig.get('plugins.findPattern')
+const pluginUpdate = webconfig.get('plugins.updatePattern')
+const PINO = webconfig.get('pino')
+const webPort = webconfig.get('web-option.port')
+const urlPrefix = webconfig.get('web-option.urlPrefix')
 
 var Routes = [
   {
     prefix: urlPrefix,
-    pin: pluginPin,
+    pin: pluginCreate,
     map: {
       create: {GET: false, POST: true}
     }
   },
+  {
+    prefix: urlPrefix,
+    pin: pluginUpdate,
+    map: {
+      update: {GET: false, POST: true}
+    }
+  },
+
   {
     prefix: urlPrefix,
     pin: pluginFind,
@@ -41,20 +39,12 @@ var Routes = [
   }
 ]
 
-var seneca = Seneca({
-//  internal: { logger: require('seneca-demo-logger') },
-//  debug: { short_logs: true }
-})
-
-let expObj = Express()
-expObj.use(cors())
-// expObj.use(bodyParser.json())
-// expObj.use(bodyParser.urlencoded({ extended: false }))
+app.use(cors())
 
 var config = {
   routes: Routes,
   adapter: require('seneca-web-adapter-express'),
-  context: expObj,
+  context: app,
   options: {parseBody: true}
 }
 
@@ -64,6 +54,6 @@ seneca.client()
 .ready(() => {
   var server = seneca.export('web/context')()
   server.listen(webPort, () => {
-    console.log('server started on: ', webPort)
+    pino(PINO).info('server started on:', webPort)
   })
 })

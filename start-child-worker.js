@@ -2,9 +2,11 @@
 let rJob = require('./index')
 const config = require('config')
 let registerWorker = config.get('registerWorker')
+const pino = require('pino')
+const PINO = config.get('pino')
 
 process.on('message', (m) => {
-  console.log('CHILD got message:', m)
+  pino(PINO).info('CHILD got message:', m)
 })
 
 const vm = require('vm')
@@ -26,53 +28,51 @@ function getJobTypeWorkerProcess (jobType) {
 }
 
 let runWorker = function (options) {
-  console.log("================Worker Start=====", options)
+  pino(PINO).info("Worker Start", options)
   rJob.getJobQueue(options).then(async result => {
     try {
-      console.log('=======job queue object created =', options.queue.name, '========')
+      pino(PINO).info('job queue object created', options.queue.name)
       let qObj = result.q
       qObj.process(async (job, next, onCancel) => {
         try {
           JobExecute(job)
-            .then(result => { console.log('=======worker done=', options.queue.name, '========'); next(null, result) })
+            .then(result => { pino(PINO).info('worker done', options.queue.name); next(null, result) })
             .catch(err => {
-              // console.log("==========================job.id=",job.id);
-                qObj.getJob(job.id).then((savedJobs) => {
-                    const processDate = new Date((new Date()).getTime() + (2 * 60 * 1000))
-                    savedJobs[0].status = 'active'
-                    return qObj.reanimateJob(savedJobs[0], processDate)
-                  }).catch(err => console.error(err))
+              qObj.getJob(job.id).then((savedJobs) => {
+                  const processDate = new Date((new Date()).getTime() + (2 * 60 * 1000))
+                  savedJobs[0].status = 'active'
+                  return qObj.reanimateJob(savedJobs[0], processDate)
+                }).catch(err => pino(PINO).error(err))
 
-              console.log('=======worker error=', options.queue.name, '========');
+              pino(PINO).error('worker error', options.queue.name)
             })
-          console.log('=======worker name=', options.queue.name, '========')
+          pino(PINO).info('worker name', options.queue.name)
         } catch (err) {
-          console.log('=======handle by try-catch=', options.queue.name, '========')
+          pino(PINO).error('handle by try-catch', options.queue.name)
           return next(err)
         }
       })
       // process.on('unhandledRejection', error => {
       //   // Won't execute
-      //   console.log('unhandledRejection', error);
+      //   pino(PINO).error('unhandledRejection', error);
       // });
       qObj.on('idle', (queueId) => {
-        console.log('Queue is idle: ' + queueId)
-        console.log("============email worker process id :", process.pid)
-        //console.log(process)//.exit()
+        pino(PINO).info('Queue is idle: ' + queueId)
+        pino(PINO).info("worker process id :", process.pid)
         process.send({ 'subprocess': 'exit', 'pid': process.pid })
         process.exit()
       })
     } catch (e) {
-      console.log(e)
+      pino(PINO).error(e)
     }
-  }).catch(e => console.log(e))
+  }).catch(e => pino(PINO).error(e))
 }
 
 module.exports.runWorker = runWorker
 
 let executeWorker = async function (jobType, options) {
   try {
-    let jobProcessCode = await getJobTypeWorkerProcess(jobType) // `function (job,next){console.log("dynamic job process load")};`
+    let jobProcessCode = await getJobTypeWorkerProcess(jobType) // `function (job,next){pino(PINO).info("dynamic job process load")};`
     const script = new vm.Script(`
       (function(require) {
         JobExecute = function(job) {
@@ -91,10 +91,10 @@ let executeWorker = async function (jobType, options) {
       { filename: 'jobProcessTrace.vm' })
     script.runInThisContext()(require)
     runWorker(options)
-    console.log('Child Process as Worker Executed')
+    pino(PINO).info('Child Process as Worker Executed')
   } catch (e) {
-    console.log(e)
-    console.log('unable to load child worker.')
+    pino(PINO).error(e)
+    pino(PINO).error('unable to load child worker.')
   }
 }
 
