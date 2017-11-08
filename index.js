@@ -1,14 +1,15 @@
-let senecaObj = require('seneca')()
-const webconfig = require('config')
-let pluginPin = 'role:job,cmd:create'
-if (webconfig.has('pluginOptions.pin')) {
-  pluginPin = webconfig.get('pluginOptions.pin')
-}
-let pluginFind = 'role:job,cmd:findjob'
+var seneca = require('seneca')({log:'silent'})
+const config = require('config')
+const pino = require('pino')
 
-let createJob = function (bodyData) {
+const pluginCreate = config.get('plugins.createPattern')
+const pluginFind = config.get('plugins.findPattern')
+const pluginQueue = config.get('plugins.queuePattern')
+const pluginUpdate = config.get('plugins.updatePattern')
+
+module.exports.createJob = function (bodyData) {
   return new Promise((resolve, reject) => {
-    senecaObj.use('job').act(pluginPin, bodyData, (err, result) => {
+    seneca.use('job').act(pluginCreate, bodyData, (err, result) => {
       if (err) {
         reject(err)
       } else {
@@ -18,9 +19,9 @@ let createJob = function (bodyData) {
   })
 }
 
-let findJob = function (bodyData) {
+module.exports.findJob = function (bodyData) {
   return new Promise((resolve, reject) => {
-    senecaObj.use('job').act(pluginFind, bodyData, (err, result) => {
+    seneca.use('job').act(pluginFind, bodyData, (err, result) => {
       if (err) {
         reject(err)
       } else {
@@ -30,11 +31,9 @@ let findJob = function (bodyData) {
   })
 }
 
-let pluginQueue = 'role:job,cmd:queue'
-
-let getJobQueue = function (options) {
+module.exports.getJobQueue = function (options) {
   return new Promise((resolve, reject) => {
-    senecaObj.use('job').act(pluginQueue, options, (err, result) => {
+    seneca.use('job').act(pluginQueue, options, (err, result) => {
       if (err) {
         reject(err)
       } else {
@@ -43,9 +42,3 @@ let getJobQueue = function (options) {
     })
   })
 }
-
-module.exports.createJob = createJob
-
-module.exports.findJob = findJob
-
-module.exports.getJobQueue = getJobQueue
