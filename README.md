@@ -139,18 +139,17 @@ for dynamic execution need to start below javascript file
 
 start below javascript file
 ```
-node job-web.js
-node worker-web.js
+node job-web.js // port: 5000
+node worker-web.js // port: 3000
 node worker-need.js
-node symmetricWorker.js
+node symmetricWorker.js // port: 9001
 ```
 #### example to upload job queue process code
 post data like as below
-post URL
 ```
-localhost:3000/upload-worker-process
+post URL: localhost:3000/upload-worker-process
 ```
-post parameter
+post parameter as below
 ```
 jobtype = RegistrationEmail
 jobprocess =  {
@@ -197,8 +196,21 @@ use delete method for symmetricWorker
 ```
 http://localhost:9001/register-jobtype/RegistrationEmail
 ```
-
-
+### How Symmetric Worker works
+Symmetric Worker reads Job summary based on job type option.
+job summary as below:
+```
+{ waiting: 1,
+  active: 0,
+  completed: 0,
+  cancelled: 0,
+  failed: 0,
+  terminated: 0,
+  total: 1 }
+```
+based on job waiting count, its calculate waiting ratio.
+if wating ratio greater then our threshold, its emit the need worker event.
+so execute-worker will execute job process.
 
 ## Extra Options
 
