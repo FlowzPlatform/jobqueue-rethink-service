@@ -4,14 +4,21 @@ var _ = require('underscore')
 var app = require('express')()
 var server = require('http').Server(app)
 var io = require('socket.io')(server)
+const rethink = require('rethinkdb')
+const defaultConnection = config.get('defaultConnection')
+const symmetricWorker = config.get('symmetricWorker')
+const pino = require('pino')
 
-let rethink = require('rethinkdb')
-let defaultConnection = config.get('defaultConnection')
-let symmetricWorker = config.get('symmetricWorker')
+const waitingThreshold = config.get('waitingThreshold')
+const increaseWorker = config.get('increaseWorker')
+const maxWorker = config.get('maxWorker')
+const PINO = config.get('pino')
+let wCount = 1
+
 let rdbConn
 connectRethinkDB(defaultConnection).then(result => {
   rdbConn = result
-  checkTableExistsOrNot(rdbConn, symmetricWorker.table).then(res => console.log(res))
+  checkTableExistsOrNot(rdbConn, symmetricWorker.table).then(res => pino(PINO).info(res))
 })
 
 server.listen(symmetricWorker.port)
@@ -19,60 +26,59 @@ server.listen(symmetricWorker.port)
 // register job type queue object
 let registeredJobTypeQueueObj = {}
 
+process.setMaxListeners(0)
+let socketObj = io.of('/execute-worker')
+socketObj.on('connection', function (socket) {
+  pino(PINO).info('socket connected')
+})
+
 app.put('/register-jobtype/:jobtype', async function (req, res) {
   try {
     let newConnection = _.extend({'connection':defaultConnection},{
         'queue': {'name': req.params.jobtype}
       })
-    //console.log(newConnection)
+    //pino(PINO).info(newConnection)
     generateQueueObjectByJobTypeWithSaveToDB(req.params.jobtype, newConnection)
-    .then(result => { /* console.log("register response==",result); */ res.send(result) })
-    .catch(err => { /* console.log("register response==",err); */ res.send(err) })
+    .then(result => { /* pino(PINO).info("register response==",result); */ res.send(result) })
+    .catch(err => { /* pino(PINO).info("register response==",err); */ res.send(err) })
   } catch (e) {
-    //console.log(e)
+    //pino(PINO).info(e)
     return res.status(400).send('JobType not registered')
   }
 })
 
 app.delete('/register-jobtype/:jobtype', async function (req, res) {
   try {
-    //console.log(registeredJobTypeQueueObj[req.params.jobtype])
+    //pino(PINO).info(registeredJobTypeQueueObj[req.params.jobtype])
     if (registeredJobTypeQueueObj[req.params.jobtype] !== undefined) {
       delete registeredJobTypeQueueObj[req.params.jobtype]
       deleteDataJobType(symmetricWorker.table, rdbConn, req.params.jobtype)
-      .then(result => { res.send('JobType successfully unregister') })
-      .catch(err => { res.send(res) })
-      // console.log('===========remove job type======')
+        .then(result => { res.send('JobType successfully unregister') })
+        .catch(err => { res.send(res) })
+      // pino(PINO).info('===========remove job type======')
     } else {
       res.send('JobType not found')
     }
   } catch (e) {
-    console.log(e)
+    pino(PINO).error(e)
     return res.status(400).send('JobType not found')
   }
 })
 
 app.post('/register-jobtype/:jobtype', async function (req, res) {
   try {
-      let newConnection = _.extend({'connection':defaultConnection},{
-        connction: req.body.connection,
-        })
-    console.log('================newOptions====',newConnection)
+    let newConnection = _.extend({'connection':defaultConnection},{
+      connection: req.body.connection,
+    })
+    pino(PINO).info('newOptions',newConnection)
     generateQueueObjectByJobTypeWithSaveToDB(req.param.jobtype, newConnection)
-    .then(result => { console.log("register response==",result); res.send(result) })
-    .catch(err => { console.log("register response==",err);res.send(err) })
+    .then(result => { pino(PINO).info("register response",result); res.send(result) })
+    .catch(err => { pino(PINO).error("register response",err);res.send(err) })
   } catch (e) {
-    console.log(e)
+    pino(PINO).error(e)
     return res.status(400).send('JobType not registered')
   }
 })
-
-
-let waitingThreshold = 0.40
-let increaseWorker = 10
-let maxWorker = 10
-
-let wCount = 1
 
 let generateQueueObjectByJobTypeWithSaveToDB = function (jobType, options) {
   return new Promise((resolve, reject) => {
@@ -113,39 +119,36 @@ let generateQueueObjectByJobTypeWithOutSave = function (jobType, options) {
   })
 }
 
-process.setMaxListeners(0)
-let socketObj = io.of('/execute-worker')
-socketObj.on('connection', function (socket) {
-  console.log('socket connected')
-})
 
 async function getSummary () {
   try {
-    // console.log("=======registeredJobTypeQueueObj length===>",Object.keys(registeredJobTypeQueueObj).length)
+    // pino(PINO).info("=======registeredJobTypeQueueObj length===>",Object.keys(registeredJobTypeQueueObj).length)
     if (Object.keys(registeredJobTypeQueueObj).length > 0) {
-      console.log('=================================Summary Start===========================================')
+      pino(PINO).info('Summary Start')
       for (var jobType in registeredJobTypeQueueObj) {
           let objQ = registeredJobTypeQueueObj[jobType].qObj
-          //console.log("=============queue obj===>",objQ,"<===============")
-          console.log('========JobType=', jobType, '=========')
+          //pino(PINO).info("=============queue obj===>",objQ,"<===============")
+          pino(PINO).info('JobType', jobType)
           let concurrency = objQ.concurrency
-          let summary = await objQ.summary().catch(e => console.log(e))
-          console.log(summary)
-          //console.log('======running=>', objQ.running, '======concurrency=>', concurrency, '=======summary===', summary)
+          let summary = await objQ.summary().catch(e => pino(PINO).error(e))
+          pino(PINO).info(summary)
+          //pino(PINO).info('======running=>', objQ.running, '======concurrency=>', concurrency, '=======summary===', summary)
 
-          let waitingRatio = (summary.waiting) / (summary.total - (summary.active + summary.completed + summary.cancelled + summary.failed + summary.terminated ))
-          // console.log("=======waitingRatio====>",waitingRatio)
+          let sCreated = summary.created ? summary.created : 0
+          let denominator = (summary.total - (summary.active + summary.completed + summary.cancelled + summary.failed + summary.terminated + sCreated))
+          let waitingRatio = denominator != 0 ? (summary.waiting) / denominator : 0
+          // pino(PINO).info("=======waitingRatio====>",waitingRatio)
           if (waitingRatio > waitingThreshold && wCount < maxWorker ) {
             let startWorkers = parseInt(((100 * (waitingRatio - waitingThreshold)) * increaseWorker) / 100)
-             console.log("==============before emit=========")
+             pino(PINO).info("before emit")
             socketObj.emit('worker', {'jobType': jobType, 'needWorker': startWorkers, 'options': registeredJobTypeQueueObj[jobType].options})
           }
-          // console.log("============simatric process id :",process.pid)
+          // pino(PINO).info("============simatric process id :",process.pid)
       }
-      console.log('=================================Summary End=============================================')
+      pino(PINO).info('Summary End')
     }
   } catch (e) {
-    console.log(e)
+    pino(PINO).error(e)
   }
   setTimeout(() => { getSummary() }, 5000)
 }
@@ -189,7 +192,7 @@ function saveToRethinkDB (table, connection, data) {
       if (err) {
         reject(err)
       } else {
-        console.log('data inserted')
+        pino(PINO).info('data inserted')
         resolve(result)
       }
     })

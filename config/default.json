@@ -1,6 +1,10 @@
 {
-  "pluginOptions" : {
-    "pin": "role:job,cmd:create"
+  "plugins" : {
+    "createPattern": "role:job,cmd:create",
+    "findPattern": "role:job,cmd:findjob",
+    "queuePattern": "role:job,cmd:queue",
+    "updatePattern": "role:job,cmd:update",
+    "subscriptionCreatePattern": "role:subscription,cmd:created"
   },
   "defaultConnection" : {
     "host": "localhost",
@@ -29,10 +33,19 @@
     "port": 3000,
     "getJobModuleApiURL": "http://localhost:3000/job-module/"
   },
+  "waitingThreshold": 0.40,
+  "increaseWorker": 10,
+  "maxWorker": 10,
   "symmetricWorker": {
     "port" : 9001,
     "table" : "symmetricWorkers",
     "executeWorkerURL": "http://localhost:9001/execute-worker",
     "childProcessFile": "start-child-worker.js"
+  },
+  "pino": {
+    "timestamp": false,
+    "prettyPrint": {
+      "forceColor": true
+    }
   }
 }

@@ -1,36 +1,37 @@
 const Queue = require('rethinkdb-job-queue')
 const config = require('config')
+const pino = require('pino')
+const PINO = config.get('pino')
+const pluginSubscriptionCreate = config.get('plugins.subscriptionCreatePattern')
+const pluginCreate = config.get('plugins.createPattern')
+const pluginFind = config.get('plugins.findPattern')
+const pluginQueue = config.get('plugins.queuePattern')
+const pluginUpdate = config.get('plugins.updatePattern')
 
-let pluginSubscriptionCreate = 'role:subscription,cmd:created'
-let pluginCreate = 'role:job,cmd:create'
-let pluginFind = 'role:job,cmd:findjob'
-let pluginQueue = 'role:job,cmd:queue'
-if (config.has('pluginOptions.pin')) {
-  pluginCreate = config.get('pluginOptions.pin')
-}
-
-let dbConfig = config.get('defaultConnection')
-let qConfig = config.get('defaultQueue')
-let subsConfig = config.get('defaultSubscription')
+const dbConfig = config.get('defaultConnection')
+const qConfig = config.get('defaultQueue')
+const subsConfig = config.get('defaultSubscription')
 
 const qCreateOption = config.get('defaultCreateJob')
 
 const defaultOption = {
-  connction: dbConfig,
+  connection: dbConfig,
   queue: qConfig,
   options: qCreateOption,
   subscription: subsConfig
 }
-// console.log(defaultConnectionOptions, defaultQueueOption, defaultCreateJobOption)
+
 module.exports = function job (options) {
   let rethinkDBInfo, newoptions
   let plugin = this
   let priority = ['lowest', 'low', 'normal', 'medium', 'high', 'highest']
+  let allowedStatus = ['created']
+
   let mergeOptions = function (fOptions, mOption) {
     try {
       return plugin.util.deepextend({
         queue: fOptions.queue,
-        connction: fOptions.connction,
+        connection: fOptions.connection,
         options: fOptions.options,
         subscription: fOptions.subscription
       }, mOption)
@@ -40,7 +41,7 @@ module.exports = function job (options) {
   }
 
   options = mergeOptions(defaultOption, options)
-  // console.log('======after merge========', options)
+
   let validateRequestBody = function (msg) {
     if (msg.request$ !== undefined) {
       var contype = msg.request$.headers['content-type']
@@ -66,7 +67,7 @@ module.exports = function job (options) {
     }
   }
 
-  this.add(pluginCreate, async function (msg, response) {
+  plugin.add(pluginCreate, async function (msg, response) {
     try {
       // validate parameter
       let validParamErr
@@ -79,12 +80,13 @@ module.exports = function job (options) {
       // if any option pass as parameter it will create jobs
       let newoption = {
         queue: msg.queue,
-        connction: msg.connction,
+        connection: msg.connection,
         options: msg.options
       }
+
       // Merge Options
       newoptions = mergeOptions(options, newoption)
-      //console.log("=====================job Options=======",newoptions)
+
       await createRethinkJobQueue(msg)
         .then(result => {
           // add to subscription queue when its enable
@@ -92,11 +94,11 @@ module.exports = function job (options) {
             jData = Object.assign({}, result, rethinkDBInfo)
             addToScubscriptionQueue(plugin, jData)
           }
-          result.connctionInfo = rethinkDBInfo
+          result.connectionInfo = rethinkDBInfo
           response(null, result)
         })
         .catch(err => {
-          err.connctionInfo = rethinkDBInfo
+          err.connectionInfo = rethinkDBInfo
           response(err)
         })
     } catch (err) {
@@ -114,7 +116,7 @@ module.exports = function job (options) {
     // })
   }
 
-  this.add(pluginQueue, async function (msg, response) {
+  plugin.add(pluginQueue, async function (msg, response) {
     try {
       // validate parameter
       let validParamErr
@@ -123,16 +125,18 @@ module.exports = function job (options) {
         response(validParamErr)
         return false
       }
+
       // if any option pass as parameter it will create jobs
       let newoption = {
         queue: msg.queue,
-        connction: msg.connction,
+        connection: msg.connection,
         options: msg.options
       }
+
       // Merge Options
       newoptions = mergeOptions(options, newoption)
-      // console.log("===========queue=obj==================")
-      let queueObj = await createJobQueue(newoptions.connction, newoptions.queue)
+
+      let queueObj = await createJobQueue(newoptions.connection, newoptions.queue)
       queueObj.on('error', (err) => {
         // err object is system error
         response(customError(err))
@@ -143,7 +147,7 @@ module.exports = function job (options) {
     }
   })
 
-  this.add(pluginFind, async function (msg, response) {
+  plugin.add(pluginFind, async function (msg, response) {
     try {
       // validate parameter
       let validParamErr
@@ -156,19 +160,54 @@ module.exports = function job (options) {
       // if any option pass as parameter it will create jobs
       let newoption = {
         queue: msg.queue,
-        connction: msg.connction,
+        connection: msg.connection,
         options: msg.options
       }
+
       // Merge Options
       newoptions = mergeOptions(options, newoption)
 
       await findRethinkJob(msg)
         .then(result => {
-          result.connctionInfo = rethinkDBInfo
+          result.connectionInfo = rethinkDBInfo
           response(null, result)
         })
         .catch(err => {
-          err.connctionInfo = rethinkDBInfo
+          err.connectionInfo = rethinkDBInfo
+          response(err)
+        })
+    } catch (err) {
+      response(err)
+    }
+  })
+
+  plugin.add(pluginUpdate, async function (msg, response) {
+    try {
+      // validate parameter
+      let validParamErr
+      [validParamErr, msg] = validateRequestBody(msg)
+      if (validParamErr) {
+        response(validParamErr)
+        return false
+      }
+
+      // if any option pass as parameter it will create jobs
+      let newoption = {
+        queue: msg.queue,
+        connection: msg.connection,
+        options: msg.options
+      }
+
+      // Merge Options
+      newoptions = mergeOptions(options, newoption)
+
+      await updateRethinkJob(msg)
+        .then(result => {
+          result.connectionInfo = rethinkDBInfo
+          response(null, result)
+        })
+        .catch(err => {
+          err.connectionInfo = rethinkDBInfo
           response(err)
         })
     } catch (err) {
@@ -180,9 +219,9 @@ module.exports = function job (options) {
     return new Promise(async(resolve, reject) => {
       try {
         // check port number range
-        checkPortNumber(newoptions.connction.port)
+        checkPortNumber(newoptions.connection.port)
         .then(async result => {
-          let queueObj = await createJobQueue(newoptions.connction, newoptions.queue)
+          let queueObj = await createJobQueue(newoptions.connection, newoptions.queue)
           queueObj.on('error', (err) => {
             // err object is system error
             reject(customError(err))
@@ -198,7 +237,7 @@ module.exports = function job (options) {
           // this is return custom error
           reject(err)
         })
-        // let dbDriver = await createRethinkdbDash(options.connction)
+        // let dbDriver = await createRethinkdbDash(options.connection)
       } catch (err) {
         // some system fatal error happend - no way to recover !!
         reject(customError(err))
@@ -210,10 +249,11 @@ module.exports = function job (options) {
     return new Promise(async(resolve, reject) => {
       try {
         // check port number range
-        checkPortNumber(newoptions.connction.port)
+        checkPortNumber(newoptions.connection.port)
         .then(async result => {
-          let queueObj = await createJobQueue(newoptions.connction, newoptions.queue)
+          let queueObj = await createJobQueue(newoptions.connection, newoptions.queue)
           queueObj.on('error', (err) => {
+            pino(PINO).error(err);
             // err object is system error
             reject(customError(err))
           })
@@ -223,15 +263,17 @@ module.exports = function job (options) {
             .then(result => {
               savedJobs = result // {'jobId': result[0].id}
             })
-            .catch(err => { customError(err) })
+            .catch(err => { pino(PINO).error(err); customError(err) })
           resolve(savedJobs)
         })
         .catch(err => {
+          pino(PINO).error(err);
           // this is return custom error
           reject(err)
         })
-        // let dbDriver = await createRethinkdbDash(options.connction)
+        // let dbDriver = await createRethinkdbDash(options.connection)
       } catch (err) {
+        pino(PINO).error(err);
         // some system fatal error happend - no way to recover !!
         reject(customError(err))
       }
@@ -251,13 +293,12 @@ module.exports = function job (options) {
   let createJob = async function (queueObj, QData) {
     try {
       delete QData.queue
-      delete QData.connction
+      delete QData.connection
       // delete QData.options
       let jobs = []
       if (QData.jobs !== undefined && Array.isArray(QData.jobs)) {
         for (let i = 0; i < QData.jobs.length; i++) {
           let jobObj = await singleCreateJobObj(queueObj, QData.jobs[i])
-          //console.log("=====new jobs======",jobObj)
           jobs.push(jobObj)
         }
       } else {
@@ -272,50 +313,24 @@ module.exports = function job (options) {
   let singleCreateJobObj = function (queueObj, jData) {
     return new Promise(async (resolve, reject) => {
       // if any option pass as parameter it will create jobs
-      let newCreateJoboption = {
-        options: jData.options
-      }
-      //console.log("===============",newCreateJoboption,"========",newoptions.options)
+      let newCreateJoboption = jData.options
+
+      delete jData.options
+
       // Merge Options
       try {
-        newCreateJoboption = plugin.util.deepextend({
-          options: newoptions.options
-        }, newCreateJoboption)
+        newCreateJoboption = plugin.util.deepextend(newoptions.options, newCreateJoboption)
       } catch (err) {}
-      //console.log("=======new options========",newCreateJoboption)
 
-      let qObj = await queueObj.createJob({data: jData})
-      // set job queue priority options
+      let job = {}
+      job.data = jData
+      for (key in newCreateJoboption) {
+        if (newCreateJoboption[key]) {
+          job[key] = newCreateJoboption[key]
+        }
+      }
 
-      if (newCreateJoboption.options.priority !== 'undefined'
-          && newCreateJoboption.options.priority !== ''
-          && priority.includes(newCreateJoboption.options.priority)) {
-        qObj.setPriority(newCreateJoboption.options.priority)
-      }
-      // set job queue Timeout options
-      if (newCreateJoboption.options.timeout !== 'undefined' &&
-          newCreateJoboption.options.timeout !== '' &&
-          typeof (newCreateJoboption.options.timeout) === 'number') {
-        qObj.setTimeout(newCreateJoboption.options.timeout)
-      }
-      // set job queue RetryMax options
-      if (newCreateJoboption.options.retrymax !== 'undefined' &&
-        newCreateJoboption.options.retrymax !== '' &&
-        typeof (newCreateJoboption.options.retrymax) === 'number') {
-        qObj.setRetryMax(newCreateJoboption.options.retrymax)
-      }
-      // set job queue RetryDelay options
-      if (newCreateJoboption.options.retrydelay !== 'undefined' &&
-          newCreateJoboption.options.retrydelay !== '' &&
-          typeof newCreateJoboption.options.retrydelay === 'number') {
-        qObj.setRetryDelay(newCreateJoboption.options.retrydelay)
-      }
-      // set job queue RetryDelay options
-      if (newCreateJoboption.options.name !== 'undefined' &&
-          newCreateJoboption.options.name !== '' &&
-          typeof newCreateJoboption.options.name === 'string') {
-        qObj.setName(newCreateJoboption.options.name)
-      }
+      let qObj = await queueObj.createJob(job)
       resolve(qObj)
     })
 
@@ -324,20 +339,25 @@ module.exports = function job (options) {
   let addJob = async function (queueObj, job) {
     return new Promise(async (resolve, reject) => {
       try {
-        //console.log("=====add jobs======",job)
         await queueObj.addJob(job)
-                      .then(result => {
-                        // console.log('=========================', result)
-                        result = {job: result.map(function (a) { delete a.q; return a })}
-                        resolve(result)
-                      })
-                      .catch(err => {
-                        reject(err)
-                      }
-                    )
+          .then(async result => {
+            for (i=0;i<result.length;i++) {
+              if (result[i].manualStatus && allowedStatus.includes(result[i].manualStatus)) {
+                result[i].status = result[i].manualStatus
+                delete result[i].manualStatus
+                await result[i].update()
+              } else if (result[i].manualStatus) {
+                delete result[i].manualStatus
+              }
+            }
+            result = {job: result.map(function (a) { delete a.q; return a })}
+            resolve(result)
+          })
+          .catch(err => {
+            reject(err)
+          })
         // return added
       } catch (err) {
-        //console.log("========addjob==catch========",err)
         reject(err)
       }
     })
@@ -357,6 +377,57 @@ module.exports = function job (options) {
       }
     })
   }
+
+  let updateRethinkJob = async function (qdata) {
+    return new Promise(async(resolve, reject) => {
+      try {
+        // check port number range
+        checkPortNumber(newoptions.connection.port)
+        .then(async result => {
+          let queueObj = await createJobQueue(newoptions.connection, newoptions.queue)
+          queueObj.on('error', (err) => {
+            // err object is system error
+            reject(customError(err))
+          })
+
+          await updateJob(queueObj, qdata.findVal, qdata.data, qdata.options)
+            .then(result => {
+              resolve(result)
+            })
+            .catch(err => { customError(err) })
+        })
+        .catch(err => {
+          // this is return custom error
+          reject(err)
+        })
+        // let dbDriver = await createRethinkdbDash(options.connection)
+      } catch (err) {
+        // some system fatal error happend - no way to recover !!
+        reject(customError(err))
+      }
+    })
+  }
+
+  let updateJob = async function (queueObj, val, jobData, options) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        queueObj.getJob(val, true).then(async (jobs) => {
+          if(options) {
+            for (key in options) {
+              jobs[0][key] = options[key]
+            }
+          }
+          jobs[0].data = jobData
+          await jobs[0].update()
+          jobs = jobs.map(function (a) { delete a.q; return a })
+          resolve(jobs)
+        }).catch(err => reject(err))
+      } catch (err) {
+        reject(err)
+      }
+    })
+  }
+
 }
 
 let customError = function (err, errorCode) {
