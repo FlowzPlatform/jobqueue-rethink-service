@@ -9,9 +9,9 @@ const defaultConnection = config.get('defaultConnection')
 const symmetricWorker = config.get('symmetricWorker')
 const pino = require('pino')
 
-const waitingThreshold = config.get('waitingThreshold')
-const increaseWorker = config.get('increaseWorker')
-const maxWorker = config.get('maxWorker')
+const waitingThreshold = symmetricWorker.get('waitingThreshold')
+const increaseWorker = symmetricWorker.get('increaseWorker')
+const maxWorker = symmetricWorker.get('maxWorker')
 const PINO = config.get('pino')
 let wCount = 1
 

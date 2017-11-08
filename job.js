@@ -253,7 +253,7 @@ module.exports = function job (options) {
         .then(async result => {
           let queueObj = await createJobQueue(newoptions.connection, newoptions.queue)
           queueObj.on('error', (err) => {
-            pino(PINO).error(err);
+            pino(PINO).error(err)
             // err object is system error
             reject(customError(err))
           })
@@ -267,13 +267,13 @@ module.exports = function job (options) {
           resolve(savedJobs)
         })
         .catch(err => {
-          pino(PINO).error(err);
+          pino(PINO).error(err)
           // this is return custom error
           reject(err)
         })
         // let dbDriver = await createRethinkdbDash(options.connection)
       } catch (err) {
-        pino(PINO).error(err);
+        pino(PINO).error(err)
         // some system fatal error happend - no way to recover !!
         reject(customError(err))
       }
@@ -432,8 +432,10 @@ module.exports = function job (options) {
 
 let customError = function (err, errorCode) {
   let errorKey = 'ERR_SERVICE_UNAVAIALBLE'
-  if (err['ReqlDriverError'] !== '') {
+  if (err.name === 'ReqlDriverError') {
     errorKey = 'ERR_REQLDRIVERERROR'
+  } else if (err.name === 'Error'){
+    errorKey = 'ERR_INVALID_PRAMATER'
   }
   let errRes = {}
   errRes['error'] = {
