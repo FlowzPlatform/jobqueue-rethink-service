@@ -34,296 +34,294 @@ $ wget https://github.com/FlowzPlatform/rethink-jobqueue-service/archive/master.
 ```
 
 ### Running Your Application
+First go to server folder. and configure config file based on environment.
+We can configure default rethink database connection, default job queue options, and job options. we can also configure service port.
 
-	First go to server folder. and configure config file based on environment.
-	We can configure default rethink database connection, default job queue options, and job options. we can also configure service port.
+After configuration Run below command
 
-	after configuration Run below command
-	```
-	$ npm install
-	```
-	its installed dependent npm packages like
-		seneca, seneca-web, seneca-mesh, rethinkdb-job-queue, rethinkdb, socket-io, and express
+```bash
+$ npm install
+```
 
-	now you can run below command
+its installed dependent npm packages like
+seneca, seneca-web, seneca-mesh, rethinkdb-job-queue, rethinkdb, socket-io, and express
 
-	```
-	$ node job-web.js
-	$ node worker-web.js
-	$ node worker-need.js
-	$ node symmetricWorker.js
-	```
+now you can run below command
 
-	Your Job creation api run on port 5000 with the development environment configuration, so in your browser navigate to http://localhost:5000
+```bash
+$ node job-web.js
+$ node worker-web.js
+$ node worker-need.js
+$ node symmetricWorker.js
+```
 
-	Your Job process registartion api run on port 3000 with the development environment configuration, so in your browser navigate to http://localhost:3000
+Your Job creation api run on port 5000 with the development environment configuration, so in your browser navigate to http://localhost:5000
 
-	And your Symmetric Worker run on port 9001.
+Your Job process registartion api run on port 3000 with the development environment configuration, so in your browser navigate to http://localhost:3000
 
-	That's it! Your application should be running. To proceed with your development, check the other sections in this documentation.
+And your Symmetric Worker run on port 9001.
+
+That's it! Your application should be running. To proceed with your development, check the other sections in this documentation.
 
 
 ### [1] Create Job
-
-	Create job api : http://localhost:5000/job/create
+Create job api : http://localhost:5000/job/create
 
 #### Notes :
-			job data will be pass through POST method and content-type should be application/json
+Job data will be pass through POST method and content-type should be application/json
+you can create job using different options
 
-	you can create job using different options
+* First option
+Only job data pass
 
-	[1.1] First option
-				Only job data pass
+```
+{
+	"to":"abcd@yourdomain.com",
+	"from":"info@yourdomain.com",
+	"subject":"this is test mail",
+	"body":"this is message body"
+}
+```
 
-		```
+* Second option
+With rethinkdb connction, job type and job data options
+
+```
+{
+  "connction" : {
+    "host": "localhost",
+    "port": 28015,
+    "db": "jobqueue"
+  },
+  "queue" : {
+    "name": "registartion"
+  },
+	"to":"abcd@yourdomain.com",
+	"from":"info@yourdomain.com",
+	"subject":"this is test mail",
+	"body":"this is message body"
+}
+```
+
+* Third option - multiple job
+With rethinkdb connction, job type and job data with each job options
+
+```
+{
+	"connction" : {
+		"host":"localhost",
+	    "port": 28015,
+	    "db": "jobqueue"
+	  },
+	  "queue" : {
+	    "name": "registartion"
+	  },
+	  "options" : {
+	    "priority": "normal",
+	    "timeout": 499999,
+	    "retrymax": 1,
+	    "retrydelay": 500000
+	  },
+
+	"jobs" : [
 		{
-			"to":"abcd@yourdomain.com",
-			"from":"info@yourdomain.com",
-			"subject":"this is test mail",
-			"body":"this is message body"
-		}
-		```
-	[1.2] second option
-		With rethinkdb connction, job type and job data options
-
-		```
+			"subject":"this is test mail-1",
+			"options" : {
+			    "priority": "high",
+			    "timeout": 700000,
+			    "retrymax": 5,
+			    "retrydelay": 100000
+			  }
+		},
 		{
-		  "connction" : {
-		    "host": "localhost",
-		    "port": 28015,
-		    "db": "jobqueue"
-		  },
-		  "queue" : {
-		    "name": "registartion"
-		  },
-			"to":"abcd@yourdomain.com",
-			"from":"info@yourdomain.com",
-			"subject":"this is test mail",
-			"body":"this is message body"
-		}
-		```
-
-	[1.3] third option - multiple job
-			With rethinkdb connction, job type and job data with each job options
-
-		```
+			"subject":"this is test mail-2",
+			"options" : {
+				"priority": "highest",
+			    "timeout": 700000,
+			    "retrymax": 4,
+			    "retrydelay": 100000,
+			    "name" :"Password-Update-Mail"
+			}
+		},
 		{
-			"connction" : {
-				"host":"localhost",
-			    "port": 28015,
-			    "db": "jobqueue"
-			  },
-			  "queue" : {
-			    "name": "registartion"
-			  },
-			  "options" : {
-			    "priority": "normal",
-			    "timeout": 499999,
-			    "retrymax": 1,
-			    "retrydelay": 500000
-			  },
-
-			"jobs" : [
-				{
-					"subject":"this is test mail-1",
-					"options" : {
-					    "priority": "high",
-					    "timeout": 700000,
-					    "retrymax": 5,
-					    "retrydelay": 100000
-					  }
-				},
-				{
-					"subject":"this is test mail-2",
-					"options" : {
-						"priority": "highest",
-					    "timeout": 700000,
-					    "retrymax": 4,
-					    "retrydelay": 100000,
-					    "name" :"Password-Update-Mail"
-					}
-				},
-				{
-					"subject":"this is test mail-3",
-					"options" : {
-					    "priority": "medium",
-					    "timeout": 700000,
-					    "retrymax": 3,
-					    "retrydelay": 100000
-					  }
-				}
-			]
+			"subject":"this is test mail-3",
+			"options" : {
+			    "priority": "medium",
+			    "timeout": 700000,
+			    "retrymax": 3,
+			    "retrydelay": 100000
+			  }
 		}
-		```
+	]
+}
+```
 
 ### [2] Find Job
-
-	Find job api : http://localhost:5000/job/find
+Find job api : http://localhost:5000/job/find
 
 #### Notes :
-			find data will be pass through POST method and content-type should be application/json
+Find data will be pass through POST method and content-type should be application/json
+you can find job using different options
 
-	you can find job using different options
+* First option
+Only job data pass
 
-	[2.1] First option
-				Only job data pass
+```
+"find": {
+	"status":"waiting"
+	}
+```
 
-			```
-			"find": {
-				"status":"waiting"
-				}
-			```
-	[2.2] Second option
-				With rethinkdb connction, job type and find data
+* Second option
+With rethinkdb connction, job type and find data
 
-			```
-			{
-			  "connction" : {
-			    "host": "localhost",
-			    "port": 28015,
-			    "db": "jobqueue"
-			  },
-			  "queue" : {
-			    "name": "registartion"
-			  },
-			  "find": {
-			  	"data":{"subject":"this is test mail"}
-			  }
-			}
-			```
+```
+{
+  "connction" : {
+    "host": "localhost",
+    "port": 28015,
+    "db": "jobqueue"
+  },
+  "queue" : {
+    "name": "registartion"
+  },
+  "find": {
+  	"data":{"subject":"this is test mail"}
+  }
+}
+```
 
 ### [3] Register job-type process
+Register job type process api : http://localhost:3000/upload-worker-process
 
-		register job type process api : http://localhost:3000/upload-worker-process
+#### Notes :
+Data will be pass through POST method and content-type should be multipart/form-data
 
-		#### Notes :
-				data will be pass through POST method and content-type should be multipart/form-data
+#### Dependencies :
+In job process code you have to set resolve and reject as response for next job process in job queue
 
-		#### Dependencies :
-				In job process code you have to set resolve and reject as response for next job process in job queue
+```
+jobtype = RegistrationEmail
+jobprocess =  {
+  const nodemailer = require('nodemailer')
+  let transporter = nodemailer.createTransport({
+    service: 'SMTP',
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,
+    auth: {
+      user: 'your@gmail.com',
+      pass: 'your-password'
+    }
+  })
 
-			```
-			jobtype = RegistrationEmail
-			jobprocess =  {
-				  const nodemailer = require('nodemailer')
-				  let transporter = nodemailer.createTransport({
-				    service: 'SMTP',
-				    host: 'smtp.gmail.com',
-				    port: 465,
-				    secure: true,
-				    auth: {
-				      user: 'your@gmail.com',
-				      pass: 'your-password'
-				    }
-				  })
-
-				  // setup email data with unicode symbols
-				  let mailOptions = {
-				    from: job.data.from, // sender address
-				    to: job.data.to, // list of receivers
-				    cc: job.data.cc, // list of receivers
-				    subject: job.data.subject, // Subject line
-				    text: job.data.body, // plain text body
-				    html: job.data.body // html body
-				  }
-				  // send mail with defined transport object
-				  transporter.sendMail(mailOptions, (error, info) => {
-				    console.log(info)
-				    if (error) {
-				      reject(error)
-				    }
-				    resolve('Message ' +info.messageId +' sent: '+ info.response)
-				  })
-				}
-			```
+  // setup email data with unicode symbols
+  let mailOptions = {
+    from: job.data.from, // sender address
+    to: job.data.to, // list of receivers
+    cc: job.data.cc, // list of receivers
+    subject: job.data.subject, // Subject line
+    text: job.data.body, // plain text body
+    html: job.data.body // html body
+  }
+  // send mail with defined transport object
+  transporter.sendMail(mailOptions, (error, info) => {
+    console.log(info)
+    if (error) {
+      reject(error)
+    }
+    resolve('Message ' +info.messageId +' sent: '+ info.response)
+  })
+}
+```
 
 ### [4] Register job-type to Symmetric Worker
+register job type api : http://localhost:9001/register-jobtype/RegistrationEmail
 
-		register job type api : http://localhost:9001/register-jobtype/RegistrationEmail
-
-		#### Notes :
-				job-type name will be pass through PUT method
+#### Notes :
+job-type name will be pass through PUT method
 
 ### [5] Unregister job-type from Symmetric Worker
+register job type api : http://localhost:9001/register-jobtype/RegistrationEmail
 
-		register job type api : http://localhost:9001/register-jobtype/RegistrationEmail
-
-		#### Notes :
-				job-type name will be pass through delete method
+#### Notes :
+job-type name will be pass through delete method
 
 ### [6] How Symmetric Worker works
+Symmetric Worker reads Job summary based on job type option.
 
-		Symmetric Worker reads Job summary based on job type option.
+job summary as below:
 
-		job summary as below:
-		```
-		{ waiting: 1,
-		  active: 0,
-		  completed: 0,
-		  cancelled: 0,
-		  failed: 0,
-		  terminated: 0,
-		  total: 1 }
-		```
-		Based on job waiting count, its calculate waiting ratio.
-		if wating ratio greater then our threshold, its emit the need worker event.
-		so execute-worker will execute job process.
+```
+{ waiting: 1,
+  active: 0,
+  completed: 0,
+  cancelled: 0,
+  failed: 0,
+  terminated: 0,
+  total: 1 }
+```
+
+Based on job waiting count, its calculate waiting ratio.
+if wating ratio greater then our threshold, its emit the need worker event.
+so execute-worker will execute job process.
 
 ### [7] Extra Options
 
-		[7.1] create job-queue using seneca-mesh
+* create job-queue using seneca-mesh
 
-		using seneca-mesh we can create job. so on server side we do not need to create any rest-api request. using seneca act we can generate job.
+Using seneca-mesh we can create job. so on server side we do not need to create any rest-api request. using seneca act we can generate job.
 
-		here is example of using seneca-mesh create job queue.
+here is example of using seneca-mesh create job queue.
 
-		```
-		$ node server.js
-		```
-		below code write in job-mesh.js file and run it.
+```
+$ node server.js
+```
 
-		```
-		let seneca = require('seneca')
+below code write in job-mesh.js file and run it.
 
-		let pluginPin = 'role:job,cmd:create'
+```
+let seneca = require('seneca')
 
-		let bodyData = {
-			"to":"abcd@yourdomain.com",
-			"from":"info@yourdomain.com",
-			"subject":"this is test mail",
-			"body":"this is message body"
+let pluginPin = 'role:job,cmd:create'
+
+let bodyData = {
+	"to":"abcd@yourdomain.com",
+	"from":"info@yourdomain.com",
+	"subject":"this is test mail",
+	"body":"this is message body"
+}
+
+seneca()
+.use('mesh')
+.ready(function () {
+	let _senecaObj = this
+	_senecaObj.act(pluginPin, {msg: bodyData}, (err, done) => {
+		try {
+			if (err) {
+				console.log('Error:', err)
+				//throw err;
+			}
+			console.log('Response:', done)
+		} catch (e) {
+			console.log('Error:', e)
 		}
-
-		seneca()
-			.use('mesh')
-			.ready(function () {
-				let _senecaObj = this
-				_senecaObj.act(pluginPin, {msg: bodyData}, (err, done) => {
-					try {
-						if (err) {
-							console.log('Error:', err)
-							//throw err;
-						}
-						console.log('Response:', done)
-					} catch (e) {
-						console.log('Error:', e)
-					}
-					_senecaObj.close((err) => {
-							if (err) {
-								console.log('Close Error:', e)
-							} else {
-								console.log('seneca closed.')
-							}
-						})
-				})
+		_senecaObj.close((err) => {
+				if (err) {
+					console.log('Close Error:', e)
+				} else {
+					console.log('seneca closed.')
+				}
 			})
-		```
+	})
+})
+```
 
-		after creation of job-mesh.js file run below command
+After creation of job-mesh.js file run below command
 
-		```
-		$ node job-mesh.js
-		```
+```
+$ node job-mesh.js
+```
 
 ### License
-		Under the MIT license. See LICENSE file for more details.
+Under the MIT license. See LICENSE file for more details.
