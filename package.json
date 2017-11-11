@@ -1,5 +1,5 @@
 {
-  "name": "seneca-rethink-jobqueue",
+  "name": "rethink-jobqueue-service",
   "version": "1.0.0",
   "description": "to create rethink job queue using rest api and find jobs",
   "main": "index.js",
