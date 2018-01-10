@@ -1,8 +1,14 @@
 FROM node:latest
-#RUN mkdir /usr/src/app
-ADD . /usr/src/app/
+
+RUN mkdir -p /usr/src/app
+
+WORKDIR /usr/src/app
+
+COPY . /usr/src/app
+
 WORKDIR /usr/src/app/
-RUN cd /usr/src/app/
 RUN npm install
-EXPOSE 5000
-CMD node job-web.js
+
+EXPOSE 4004 4005 4006
+
+CMD NODE_ENV=production node job-web.js
