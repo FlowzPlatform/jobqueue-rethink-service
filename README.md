@@ -55,17 +55,17 @@ $ node worker-need.js
 $ node symmetricWorker.js
 ```
 
-Your Job creation api run on port 5000 with the development environment configuration, so in your browser navigate to http://localhost:5000
+Your Job creation api run on port 4004 with the development environment configuration, so in your browser navigate to http://localhost:4004
 
-Your Job process registartion api run on port 3000 with the development environment configuration, so in your browser navigate to http://localhost:3000
+Your Job process registartion api run on port 4005 with the development environment configuration, so in your browser navigate to http://localhost:4005
 
-And your Symmetric Worker run on port 9001.
+And your Symmetric Worker run on port 4006.
 
 That's it! Your application should be running. To proceed with your development, check the other sections in this documentation.
 
 
 ### [1] Create Job
-Create job api : http://localhost:5000/job/create
+Create job api : http://localhost:4004/job/create
 
 #### Notes :
 Job data will be pass through POST method and content-type should be application/json
@@ -157,7 +157,7 @@ With rethinkdb connction, job type and job data with each job options
 ```
 
 ### [2] Find Job
-Find job api : http://localhost:5000/job/find
+Find job api : http://localhost:4004/job/find
 
 #### Notes :
 Find data will be pass through POST method and content-type should be application/json
@@ -192,7 +192,7 @@ With rethinkdb connction, job type and find data
 ```
 
 ### [3] Register job-type process
-Register job type process api : http://localhost:3000/upload-worker-process
+Register job type process api : http://localhost:4005/upload-worker-process
 
 #### Notes :
 Data will be pass through POST method and content-type should be multipart/form-data
@@ -236,13 +236,13 @@ jobprocess =  {
 ```
 
 ### [4] Register job-type to Symmetric Worker
-register job type api : http://localhost:9001/register-jobtype/RegistrationEmail
+register job type api : http://localhost:4006/register-jobtype/RegistrationEmail
 
 #### Notes :
 job-type name will be pass through PUT method
 
 ### [5] Unregister job-type from Symmetric Worker
-register job type api : http://localhost:9001/register-jobtype/RegistrationEmail
+register job type api : http://localhost:4006/register-jobtype/RegistrationEmail
 
 #### Notes :
 job-type name will be pass through delete method

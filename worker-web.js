@@ -9,6 +9,14 @@ const PINO = config.get('pino')
 const app = require('express')()
 var rdbConn
 
+if(process.env.rdb_host!== undefined && process.env.rdb_host!== '') {
+    defaultConnection.host = process.env.rdb_host
+}
+
+if(process.env.rdb_port!== undefined && process.env.rdb_port!== '') {
+    defaultConnection.port = process.env.rdb_port
+}
+
 connectRethinkDB(defaultConnection).then(result => {
   rdbConn = result
   checkTableExistsOrNot(rdbConn, registerWorker.table).then(res => pino(PINO).info(res))

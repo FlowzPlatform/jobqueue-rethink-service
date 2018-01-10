@@ -5,6 +5,10 @@ const pino = require('pino')
 const PINO = config.get('pino')
 const symmetricWorker = config.get('symmetricWorker')
 
+if(process.env.executeWorkerURL!== undefined && process.env.executeWorkerURL!== '') {
+    symmetricWorker.executeWorkerURL = process.env.executeWorkerURL
+}
+
 let executeChildProcessAsWorker = function (jobType, options) {
   try {
     let strOptions = JSON.stringify(options)

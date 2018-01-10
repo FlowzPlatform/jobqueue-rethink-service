@@ -15,6 +15,14 @@ const maxWorker = symmetricWorker.get('maxWorker')
 const PINO = config.get('pino')
 let wCount = 1
 
+if(process.env.rdb_host!== undefined && process.env.rdb_host!== '') {
+    defaultConnection.host = process.env.rdb_host
+}
+
+if(process.env.rdb_port!== undefined && process.env.rdb_port!== '') {
+    defaultConnection.port = process.env.rdb_port
+}
+
 let rdbConn
 connectRethinkDB(defaultConnection).then(result => {
   rdbConn = result
