@@ -5,6 +5,11 @@ let registerWorker = config.get('registerWorker')
 const pino = require('pino')
 const PINO = config.get('pino')
 
+
+if(process.env.getJobModuleApiURL!== undefined && process.env.getJobModuleApiURL!== '') {
+    registerWorker.getJobModuleApiURL = process.env.getJobModuleApiURL
+}
+
 process.on('message', (m) => {
   pino(PINO).info('CHILD got message:', m)
 })
